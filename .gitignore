@@ -3,3 +3,4 @@
 /.vscode/
 *.tgz
 .DS_Store
+.env
