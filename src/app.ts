@@ -18,6 +18,15 @@ const errorHandler: Express.ErrorRequestHandler = function (err: Error, req, res
     }
 }
 
+const replacer = (key: string, value: any) => {
+    if (typeof value === 'bigint') {
+        return '0x'+value.toString(16)
+    }
+    return value
+}
+
+app.set('json replacer', replacer)
+
 app.use(Logger('dev'))
     .use(Express.json())
     .use(Express.urlencoded({ extended: false }))
