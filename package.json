@@ -6,10 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "ts-node src/index.ts",
-    "build": "tsc -p ."
+    "build": "rm -fr dist && tsc -p .",
+    "start":"node dist/index.js"
   },
   "author": "",
-  "license": "ISC",
+  "license": "LGPL-3.0",
   "dependencies": {
     "express": "^4.17.1",
     "express-toolbox": "^0.1.1",
