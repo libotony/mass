@@ -14,7 +14,8 @@ const errorHandler: Express.ErrorRequestHandler = function (err: Error, req, res
     if (err instanceof HttpError) {
         res.status(err.status).send(err.message)
     } else {
-        res.status(500).send(err.message)
+        process.stderr.write(err.stack + '\r\n')
+        res.status(500).send('internal server error')
     }
 }
 
