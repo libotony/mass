@@ -29,7 +29,7 @@ router.get('/:revision', try$(async (req, res) => {
     let b: Block
     if (req.params.revision.startsWith('0x')) {
         if (!isHexBytes(req.params.revision, 32)) {
-            throw new HttpError(400, 'invalid revision: bytes32 or number or best')
+            throw new HttpError(400, 'invalid revision: bytes32 or number or best required')
         }
         const ret = await getBlockByID(req.params.revision)
         if (!ret) {
@@ -39,7 +39,7 @@ router.get('/:revision', try$(async (req, res) => {
     } else {
         const num = parseInt(req.params.revision)
         if (isNaN(num) || !isUInt(num)) {
-            throw new HttpError(400, 'invalid revision: bytes32 or number or best')
+            throw new HttpError(400, 'invalid revision: bytes32 or number or best required')
         }
         const ret = await getBlockByNumber(num)
         if (!ret) {
@@ -50,10 +50,11 @@ router.get('/:revision', try$(async (req, res) => {
     res.json(b)
 }))
 
-router.get('/:id/transactions', try$(async (req, res) => {
-    if (!isHexBytes(req.params.id, 32)) {
-        throw new HttpError(400, 'invalid id: bytes32')
+router.get('/:blockid/transactions', try$(async (req, res) => {
+    if (!isHexBytes(req.params.blockid, 32)) {
+        throw new HttpError(400, 'invalid id: bytes32 required')
     }
-    const txs = await getBlockTransactions(req.params.id)
+    const blockID = req.params.blockid
+    const txs = await getBlockTransactions(blockID)
     res.json(txs)
 }))

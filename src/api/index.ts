@@ -5,3 +5,5 @@ export = api
 
 api.use('/blocks', require('./blocks'))
 api.use('/accounts', require('./accounts'))
+api.use('/transactions', require('./transactions'))
+api.use('/transfers', require('./transfers'))
