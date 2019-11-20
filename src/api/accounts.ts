@@ -19,9 +19,9 @@ router.get('/:address', try$(async (req, res) => {
     if (!account && !t.length && !authority) {
         throw new HttpError(404, 'address not found')
     }
-    const token: {[key:string]:bigint} ={}
+    const token: Array<{symbol:string, balance:bigint}> = []
     for (let x of t) {
-        token[AssetType[x.type]] = x.balance
+        token.push({ symbol: AssetType[x.type], balance: x.balance })
     }
     
     res.json({
