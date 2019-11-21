@@ -8,6 +8,11 @@ import { parseLimit, DEFAULT_LIMIT } from '../utils'
 const router = Router()
 export = router
 
+interface Neighbour {
+    prev: string|null
+    next: string|null
+}
+
 router.get('/recent', try$(async (req, res) => {
     const limit = req.query.limit ? parseLimit(req.query.limit) : DEFAULT_LIMIT
 
@@ -21,7 +26,7 @@ router.get('/best', try$(async (req, res) => {
 }))
 
 router.get('/:revision', try$(async (req, res) => {
-    let b: Block
+    let b: {block: Block, neighbour: Neighbour}
     if (req.params.revision.startsWith('0x')) {
         if (!isHexBytes(req.params.revision, 32)) {
             throw new HttpError(400, 'invalid revision: bytes32 or number or best required')
@@ -30,7 +35,8 @@ router.get('/:revision', try$(async (req, res) => {
         if (!ret) {
             throw new HttpError(404, 'block not found')
         }
-        b = ret
+        const nei = await getBlockNeighbour(ret.number)
+        b = { block: ret, neighbour:nei }
     } else {
         const num = parseInt(req.params.revision)
         if (isNaN(num) || !isUInt(num)) {
@@ -40,7 +46,8 @@ router.get('/:revision', try$(async (req, res) => {
         if (!ret) {
             throw new HttpError(404, 'block not found')
         }
-        b=ret
+        const nei = await getBlockNeighbour(ret.number)
+        b =  { block: ret, neighbour:nei }
     }
     res.json(b)
 }))
