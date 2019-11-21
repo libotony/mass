@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { try$, HttpError } from 'express-toolbox'
 import { Block } from '../explorer-db/entity/block'
-import { getBest, getBlockByID, getBlockByNumber, getBlockTransactions, getRecentBlocks } from '../explorer-db/service/block'
+import { getBest, getBlockByID, getBlockByNumber, getBlockTransactions, getRecentBlocks, getBlockNeighbour } from '../explorer-db/service/block'
 import { isHexBytes, isUInt } from '../validator'
 import { parseLimit, DEFAULT_LIMIT } from '../utils'
 
@@ -58,5 +58,5 @@ router.get('/:blockid/transactions', try$(async (req, res) => {
     }
     const blockID = req.params.blockid
     const txs = await getBlockTransactions(blockID)
-    res.json(txs)
+    res.json({txs})
 }))
