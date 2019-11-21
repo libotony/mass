@@ -3,19 +3,14 @@ import { try$, HttpError } from 'express-toolbox'
 import { Block } from '../explorer-db/entity/block'
 import { getBest, getBlockByID, getBlockByNumber, getBlockTransactions, getRecentBlocks } from '../explorer-db/service/block'
 import { isHexBytes, isUInt } from '../validator'
+import { parseLimit, DEFAULT_LIMIT } from '../utils'
 
 const router = Router()
 export = router
 
 router.get('/recent', try$(async (req, res) => {
-    let limit = 12
-    if (req.query.limit) {
-        const num = parseInt(req.query.limit)
-        if (isNaN(num)||!isUInt(num) || !num || num>50) { 
-            throw new HttpError(400, 'invalid limit')
-        }
-        limit = num
-    }
+    const limit = req.query.limit ? parseLimit(req.query.limit) : DEFAULT_LIMIT
+
     const blocks = await getRecentBlocks(limit)
     res.json(blocks)
 }))

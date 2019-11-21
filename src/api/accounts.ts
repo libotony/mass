@@ -1,9 +1,10 @@
 import { Router } from 'express'
 import { try$, HttpError } from 'express-toolbox'
-import { isHexBytes, isUInt } from '../validator'
-import { getAccount, getTokenBalance, countAccountTransaction, getAccountTransaction, getAccountTransfer, getAccountTransferByType, countAccountTransferByType } from '../explorer-db/service/account'
+import { isHexBytes } from '../validator'
+import { getAccount, getTokenBalance, countAccountTransaction, getAccountTransaction, getAccountTransfer, getAccountTransferByType, countAccountTransferByType, countAccountTransfer } from '../explorer-db/service/account'
 import { getAuthority, getSignedBlocks } from '../explorer-db/service/authority'
 import { AssetType } from '../explorer-db/types'
+import { parseOffset, parseLimit, DEFAULT_LIMIT } from '../utils'
 
 const router = Router()
 export = router
@@ -36,27 +37,25 @@ router.get('/:address/transactions', try$(async (req, res) => {
         throw new HttpError(400, 'invalid address')
     }
     const addr = req.params.address
-    let offset = 0
-    if (req.query.limit) {
-        const num = parseInt(req.query.limit)
-        if (isNaN(num)||!isUInt(num)) { 
-            throw new HttpError(400, 'invalid limit')
-        }
-        offset = num
-    }
-    let limit = 12
-    if (req.query.limit) {
-        const num = parseInt(req.query.limit)
-        if (isNaN(num)||!isUInt(num) || !num || num>50) { 
-            throw new HttpError(400, 'invalid limit')
-        }
-        limit = num
-    }
+    const offset = req.query.offset ? parseOffset(req.query.offset) : 0
+    const limit = req.query.limit ? parseLimit(req.query.limit) : DEFAULT_LIMIT
+
     const count = await countAccountTransaction(addr)
-    if (!count) {
+    if (!count || count <= offset) {
         return res.json({count, transactions:[]})
     }
-    const transactions = await getAccountTransaction(addr, offset, limit)
+    const raw = await getAccountTransaction(addr, offset, limit)
+    const transactions = raw.map(x => {
+        return {
+            ...x,
+            meta: {
+                blockID: x.blockID,
+                blockNumber: x.block.number,
+                blockTimestamp: x.block.timestamp
+            },
+            block:undefined
+        }
+    })
 
     res.json({count,transactions})
 }))
@@ -68,22 +67,9 @@ router.get('/:address/transfers', try$(async (req, res) => {
         throw new HttpError(400, 'invalid address')
     }
     const addr = req.params.address
-    let offset = 0
-    if (req.query.limit) {
-        const num = parseInt(req.query.limit)
-        if (isNaN(num)||!isUInt(num)) { 
-            throw new HttpError(400, 'invalid limit')
-        }
-        offset = num
-    }
-    let limit = 12
-    if (req.query.limit) {
-        const num = parseInt(req.query.limit)
-        if (isNaN(num)||!isUInt(num) || !num || num>50) { 
-            throw new HttpError(400, 'invalid limit')
-        }
-        limit = num
-    }
+    const offset = req.query.offset ? parseOffset(req.query.offset) : 0
+    const limit = req.query.limit ? parseLimit(req.query.limit) : DEFAULT_LIMIT
+
     let type: AssetType|null = null
     if (req.query.type) {
         if (AssetLiterals.indexOf(req.query.type) === -1) {
@@ -93,18 +79,40 @@ router.get('/:address/transfers', try$(async (req, res) => {
     }
 
     if (type === null) {
-        const count = await countAccountTransaction(addr)
-        if (!count) {
+        const count = await countAccountTransfer(addr)
+        if (!count || count <= offset) {
             return res.json({count, transfers:[]})
         }
-        const transfers = await getAccountTransfer(addr, offset, limit)
+        const raw = await getAccountTransfer(addr, offset, limit)
+        const transfers = raw.map(x => {
+            return {
+                ...x,
+                meta: {
+                    blockID: x.blockID,
+                    blockNumber: x.block.number,
+                    blockTimestamp: x.block.timestamp
+                },
+                block:undefined
+            }
+        })
         res.json({count,transfers})
     } else {
         const count = await countAccountTransferByType(addr, type)
-        if (!count) {
+        if (!count || count <= offset) {
             return res.json({count, transfers:[]})
         }
-        const transfers = await getAccountTransferByType(addr, type, offset, limit)
+        const raw = await getAccountTransferByType(addr, type, offset, limit)
+             const transfers = raw.map(x => {
+            return {
+                ...x,
+                meta: {
+                    blockID: x.blockID,
+                    blockNumber: x.block.number,
+                    blockTimestamp: x.block.timestamp
+                },
+                block:undefined
+            }
+        })
         res.json({count,transfers})
     }
 }))
@@ -114,30 +122,19 @@ router.get('/:address/signed', try$(async (req, res) => {
         throw new HttpError(400, 'invalid address')
     }
     const addr = req.params.address
-    let offset = 0
-    if (req.query.limit) {
-        const num = parseInt(req.query.limit)
-        if (isNaN(num)||!isUInt(num)) { 
-            throw new HttpError(400, 'invalid limit')
-        }
-        offset = num
-    }
-    let limit = 12
-    if (req.query.limit) {
-        const num = parseInt(req.query.limit)
-        if (isNaN(num)||!isUInt(num) || !num || num>50) { 
-            throw new HttpError(400, 'invalid limit')
-        }
-        limit = num
-    }
+    const offset = req.query.offset ? parseOffset(req.query.offset) : 0
+    const limit = req.query.limit ? parseLimit(req.query.limit) : DEFAULT_LIMIT
+
     const auth = await getAuthority(addr)
     if (!auth) {
         throw new HttpError(400, 'not an authority')
     }
-    if (!auth.signed) {
-        return res.json({count:auth.signed, blocks:[]})
+
+    const count = auth.signed
+    if (!count || count <= offset) {
+        return res.json({count, blocks:[]})
     }
     const blocks = await getSignedBlocks(addr, offset, limit)
 
-    res.json({count:auth.signed,blocks})
+    res.json({count, blocks})
 }))
