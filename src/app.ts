@@ -2,12 +2,14 @@ import * as Express from 'express'
 import * as Logger from 'morgan'
 import { hang, HttpError } from 'express-toolbox'
 import { getConnectionOptions, createConnection } from 'typeorm'
+import { getBest } from './db-service/block'
 
 export const app = Express()
 
 hang(app).until(async () => {
     const opt = await getConnectionOptions()
     await createConnection(Object.assign({}, opt, { synchronize: false, logging: false }))
+    await getBest()
 })
 
 const errorHandler: Express.ErrorRequestHandler = function (err: Error, req, res, next) {
