@@ -2,7 +2,7 @@ import { getConnection } from 'typeorm'
 import { Transaction } from '../explorer-db/entity/transaction'
 import { Receipt } from '../explorer-db/entity/receipt'
 import { cache, keys } from './cache'
-import { REVERSIBLE_WINDOW, blockIDtoNum } from '../explorer-db/utils'
+import { REVERSIBLE_WINDOW, blockIDtoNum } from '../utils'
 
 export const getTransactionWithBlock = async (txID: string) => {
     const key = keys.TX(txID)

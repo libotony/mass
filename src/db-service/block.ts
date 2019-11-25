@@ -2,7 +2,7 @@ import { Block } from '../explorer-db/entity/block'
 import { getConnection, In } from 'typeorm'
 import { cache, keys } from './cache'
 import { Transaction } from '../explorer-db/entity/transaction'
-import { REVERSIBLE_WINDOW, BLOCK_INTERVAL, blockIDtoNum } from '../explorer-db/utils'
+import { REVERSIBLE_WINDOW, BLOCK_INTERVAL, blockIDtoNum } from '../utils'
 
 const now = () => {
     return Math.floor(new Date().getTime()/1000)
