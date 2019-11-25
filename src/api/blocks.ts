@@ -1,10 +1,9 @@
 import { Router } from 'express'
 import { try$, HttpError } from 'express-toolbox'
 import { Block } from '../explorer-db/entity/block'
-import { getBest, getBlockByID, getBlockByNumber, getBlockTransactions, getRecentBlocks, getBlockNeighbour } from '../db-service/block'
+import { getBest, getBlockByID, getBlockTransactions, getRecentBlocks, getBlockNeighbourInTrunk, getBlockByNumber } from '../db-service/block'
 import { isHexBytes, isUInt } from '../validator'
 import { parseLimit, DEFAULT_LIMIT } from '../utils'
-import { Neighbour } from '../db-service/block'
 
 const router = Router()
 export = router
@@ -22,7 +21,7 @@ router.get('/best', try$(async (req, res) => {
 }))
 
 router.get('/:revision', try$(async (req, res) => {
-    let b: {block: Block, neighbour: Neighbour}
+    let b: {block: Block, prev: string|null, next: string|null}
     if (req.params.revision.startsWith('0x')) {
         if (!isHexBytes(req.params.revision, 32)) {
             throw new HttpError(400, 'invalid revision: bytes32 or number or best required')
@@ -31,8 +30,8 @@ router.get('/:revision', try$(async (req, res) => {
         if (!ret) {
             throw new HttpError(404, 'block not found')
         }
-        const nei = await getBlockNeighbour(ret.number)
-        b = { block: ret, neighbour:nei }
+        const nei = await getBlockNeighbourInTrunk(ret.number)
+        b = { block: ret, prev:nei.prev, next:nei.next }
     } else {
         const num = parseInt(req.params.revision)
         if (isNaN(num) || !isUInt(num)) {
@@ -42,8 +41,8 @@ router.get('/:revision', try$(async (req, res) => {
         if (!ret) {
             throw new HttpError(404, 'block not found')
         }
-        const nei = await getBlockNeighbour(ret.number)
-        b =  { block: ret, neighbour:nei }
+        const nei = await getBlockNeighbourInTrunk(ret.number)
+        b =  { block: ret, prev:nei.prev, next:nei.next }
     }
     res.json(b)
 }))

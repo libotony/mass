@@ -96,7 +96,7 @@ export const getBlockByNumber = async (num: number) => {
 }
 
 
-export const getBlockNeighbour = async (num: number) => {
+export const getBlockNeighbourInTrunk = async (num: number) => {
     const key = keys.BLOCK_NEIGHBOUR(num)
     if (cache.has(key)) {
         return cache.get(key) as Neighbour
