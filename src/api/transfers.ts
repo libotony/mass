@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { try$, HttpError } from 'express-toolbox'
 import { isUInt } from '../validator'
 import { getRecentTransfers } from '../db-service/transfer'
+import { AssetType } from '../explorer-db/types'
 
 const router = Router()
 export = router
@@ -15,6 +16,21 @@ router.get('/recent', try$(async (req, res) => {
         }
         limit = num
     }
-    const blocks = await getRecentTransfers(limit)
-    res.json(blocks)
+    const raw = await getRecentTransfers(limit)
+
+    const transfers = raw.map(x => {
+        return {
+            ...x,
+            token: AssetType[x.type],
+            type: undefined,
+            meta: {
+                blockID: x.blockID,
+                blockNumber: x.block.number,
+                blockTimestamp: x.block.timestamp
+            },
+            block:undefined
+        }
+    })
+
+    res.json({transfers})
 }))

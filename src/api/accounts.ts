@@ -87,6 +87,8 @@ router.get('/:address/transfers', try$(async (req, res) => {
         const transfers = raw.map(x => {
             return {
                 ...x,
+                token: AssetType[x.type],
+                type: undefined,
                 meta: {
                     blockID: x.blockID,
                     blockNumber: x.block.number,
@@ -102,9 +104,11 @@ router.get('/:address/transfers', try$(async (req, res) => {
             return res.json({count, transfers:[]})
         }
         const raw = await getAccountTransferByType(addr, type, offset, limit)
-             const transfers = raw.map(x => {
+        const transfers = raw.map(x => {
             return {
                 ...x,
+                token: AssetType[x.type],
+                type: undefined,
                 meta: {
                     blockID: x.blockID,
                     blockNumber: x.block.number,
