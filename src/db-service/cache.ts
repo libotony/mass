@@ -12,4 +12,5 @@ export const keys = {
     BLOCK_RECEIPT: (blockID: string) => { return 'BLOCK_RECEIPT' + blockID },
     TX: (txID: string) => { return 'TX' + txID },
     RECEIPT: (txID: string) => { return 'RECEIPT' + txID },
+    TX_TRANSFER: (txID: string) => { return 'TX_TRANSFER' + txID },
 }

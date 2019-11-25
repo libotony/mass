@@ -1,7 +1,8 @@
 import { Router } from 'express'
 import { try$, HttpError } from 'express-toolbox'
 import { isHexBytes } from '../validator'
-import { getReceipt, getTransactionWithBlock } from '../db-service/transaction'
+import { getReceipt, getTransactionWithBlock, getTransferByTX } from '../db-service/transaction'
+import { AssetType } from '../explorer-db/types'
 
 const router = Router()
 export = router
@@ -17,6 +18,14 @@ router.get('/:txid', try$(async (req, res) => {
     }
     const receipt = await getReceipt(txid)
 
+    const raw = await getTransferByTX(txid)
+    const transfers = raw.map(x => {
+        return {
+            ...x,
+            token: AssetType[x.type]
+        }
+    })
+
     res.json({
         meta: {
             blockID: tx.blockID,
@@ -24,6 +33,7 @@ router.get('/:txid', try$(async (req, res) => {
             blockTimestamp: tx.block.timestamp
         },
         tx:{...tx, block: undefined},
-        receipt
+        receipt,
+        transfers
     })
 }))
