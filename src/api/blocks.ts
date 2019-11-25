@@ -13,7 +13,7 @@ router.get('/recent', try$(async (req, res) => {
     const limit = req.query.limit ? parseLimit(req.query.limit) : DEFAULT_LIMIT
 
     const blocks = await getRecentBlocks(limit)
-    res.json(blocks)
+    res.json({blocks})
 }))
 
 router.get('/best', try$(async (req, res) => {
