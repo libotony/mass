@@ -1,8 +1,8 @@
 import { Router } from 'express'
 import { try$, HttpError } from 'express-toolbox'
 import { isHexBytes } from '../validator'
-import { getAccount, getTokenBalance, countAccountTransaction, getAccountTransaction, getAccountTransfer, getAccountTransferByType, countAccountTransferByType, countAccountTransfer } from '../explorer-db/service/account'
-import { getAuthority, getSignedBlocks } from '../explorer-db/service/authority'
+import { getAccount, getTokenBalance, countAccountTransaction, getAccountTransaction, getAccountTransfer, getAccountTransferByType, countAccountTransferByType, countAccountTransfer } from '../db-service/account'
+import { getAuthority, getSignedBlocks } from '../db-service/authority'
 import { AssetType } from '../explorer-db/types'
 import { parseOffset, parseLimit, DEFAULT_LIMIT } from '../utils'
 

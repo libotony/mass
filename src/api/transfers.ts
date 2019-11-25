@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { try$, HttpError } from 'express-toolbox'
 import { isUInt } from '../validator'
-import { getRecentTransfers } from '../explorer-db/service/transfer'
+import { getRecentTransfers } from '../db-service/transfer'
 
 const router = Router()
 export = router

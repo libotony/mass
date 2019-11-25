@@ -1,17 +1,13 @@
 import { Router } from 'express'
 import { try$, HttpError } from 'express-toolbox'
 import { Block } from '../explorer-db/entity/block'
-import { getBest, getBlockByID, getBlockByNumber, getBlockTransactions, getRecentBlocks, getBlockNeighbour } from '../explorer-db/service/block'
+import { getBest, getBlockByID, getBlockByNumber, getBlockTransactions, getRecentBlocks, getBlockNeighbour } from '../db-service/block'
 import { isHexBytes, isUInt } from '../validator'
 import { parseLimit, DEFAULT_LIMIT } from '../utils'
+import { Neighbour } from '../db-service/block'
 
 const router = Router()
 export = router
-
-interface Neighbour {
-    prev: string|null
-    next: string|null
-}
 
 router.get('/recent', try$(async (req, res) => {
     const limit = req.query.limit ? parseLimit(req.query.limit) : DEFAULT_LIMIT
