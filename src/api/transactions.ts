@@ -1,8 +1,9 @@
 import { Router } from 'express'
 import { try$, HttpError } from 'express-toolbox'
 import { isHexBytes } from '../validator'
-import { getReceipt, getTransactionWithBlock, getTransferByTX } from '../db-service/transaction'
+import { getReceipt, getTransactionWithBlock } from '../db-service/transaction'
 import { AssetType } from '../explorer-db/types'
+import { getTransferByTX } from '../db-service/transfer'
 
 const router = Router()
 export = router
