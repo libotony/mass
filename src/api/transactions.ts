@@ -23,7 +23,10 @@ router.get('/:txid', try$(async (req, res) => {
     const transfers = raw.map(x => {
         return {
             ...x,
-            token: AssetType[x.type]
+            token: AssetType[x.type],
+            type: undefined,
+            blockID: undefined,
+            id: undefined
         }
     })
 
@@ -33,8 +36,8 @@ router.get('/:txid', try$(async (req, res) => {
             blockNumber: tx.block.number,
             blockTimestamp: tx.block.timestamp
         },
-        tx:{...tx, block: undefined},
-        receipt,
+        tx:{...tx, block: undefined, id: undefined, blockID: undefined},
+        receipt:{...receipt, id: undefined, blockID: undefined},
         transfers
     })
 }))

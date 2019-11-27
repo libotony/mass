@@ -94,7 +94,9 @@ router.get('/:address/transfers', try$(async (req, res) => {
                     blockNumber: x.block.number,
                     blockTimestamp: x.block.timestamp
                 },
-                block:undefined
+                block: undefined,
+                blockID: undefined,
+                id: undefined
             }
         })
         res.json({count,transfers})
@@ -114,7 +116,9 @@ router.get('/:address/transfers', try$(async (req, res) => {
                     blockNumber: x.block.number,
                     blockTimestamp: x.block.timestamp
                 },
-                block:undefined
+                block:undefined,
+                blockID: undefined,
+                id: undefined
             }
         })
         res.json({count,transfers})

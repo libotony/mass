@@ -23,6 +23,8 @@ router.get('/recent', try$(async (req, res) => {
             ...x,
             token: AssetType[x.type],
             type: undefined,
+            id: undefined,
+            blockID: undefined,
             meta: {
                 blockID: x.blockID,
                 blockNumber: x.block.number,

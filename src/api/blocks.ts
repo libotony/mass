@@ -52,6 +52,14 @@ router.get('/:blockid/transactions', try$(async (req, res) => {
         throw new HttpError(400, 'invalid id: bytes32 required')
     }
     const blockID = req.params.blockid
-    const txs = await getBlockTransactions(blockID)
-    res.json({txs})
+    const raw = await getBlockTransactions(blockID)
+    const block = await getBlockByID(blockID)
+    const txs = raw.map(x => {
+        return {
+            ...x,
+            id: undefined,
+            blockID: undefined
+        }
+    })
+    res.json({block, txs})
 }))
