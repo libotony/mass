@@ -61,7 +61,7 @@ router.get('/:address/transactions', try$(async (req, res) => {
 }))
 
 // query type limit offset
-const AssetLiterals =  [  'VET', 'Energy', 'PLA', 'SHA', 'EHrT', 'DBET', 'TIC', 'OCE', 'SNK', 'JUR', 'AQD', 'YEET']
+const AssetLiterals =  [  'VET', 'VTHO', 'PLA', 'SHA', 'EHrT', 'DBET', 'TIC', 'OCE', 'SNK', 'JUR', 'AQD', 'YEET']
 router.get('/:address/transfers', try$(async (req, res) => {
     if (!isHexBytes(req.params.address)) {
         throw new HttpError(400, 'invalid address')
