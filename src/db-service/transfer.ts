@@ -1,9 +1,9 @@
 import { getConnection, In } from 'typeorm'
 import { AssetMovement } from '../explorer-db/entity/movement'
-import { Block } from '../explorer-db/entity/block'
 import { keys, cache } from './cache'
 import { Transaction } from '../explorer-db/entity/transaction'
 import { blockIDtoNum, REVERSIBLE_WINDOW } from '../utils'
+import { getBlocksByID } from './block'
 
 export const getRecentTransfers = async (limit: number) => {
     const conn = getConnection()
@@ -14,12 +14,17 @@ export const getRecentTransfers = async (limit: number) => {
             order: { blockID: 'DESC', moveIndex: 'DESC' },
             take: limit,
         })
-    const blocks = await conn
-        .getRepository(Block)
-        .find({
-            where: { id: In(transfers.map(x => x.blockID)) }
-        })
 
+    const ids = transfers
+        .map(x => x.blockID)
+        .reduce((acc: string[], cur) => {
+            if (acc.indexOf(cur) === -1) {
+                acc.push(cur)
+            }; return acc
+        }, [])
+    
+    
+    const blocks = await getBlocksByID(ids)
     for (let tr of transfers) {
         tr.block = blocks.find(x=>x.id===tr.blockID)!
     }
