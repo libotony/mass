@@ -53,7 +53,7 @@ router.get('/:blockid/transactions', try$(async (req, res) => {
     }
     const blockID = req.params.blockid
     const raw = await getBlockTransactions(blockID)
-    const block = await getBlockByID(blockID)
+    const block = (await getBlockByID(blockID))!
     const txs = raw.map(x => {
         return {
             ...x,
@@ -61,5 +61,12 @@ router.get('/:blockid/transactions', try$(async (req, res) => {
             blockID: undefined
         }
     })
-    res.json({block, txs})
+    res.json({
+        meta: {
+            blockID: block.id,
+            blockNumber: block.number,
+            blockTimestamp: block.timestamp
+        },
+        txs
+    })
 }))
