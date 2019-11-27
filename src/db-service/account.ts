@@ -1,10 +1,11 @@
-import { getConnection } from 'typeorm'
+import { getConnection, In } from 'typeorm'
 import { Account } from '../explorer-db/entity/account'
 import { AssetMovement } from '../explorer-db/entity/movement'
 import { AssetType } from '../explorer-db/types'
 import { Transaction } from '../explorer-db/entity/transaction'
 import { TokenBalance } from '../explorer-db/entity/token-balance'
 import { getBlocksByID } from './block'
+import { hexToBuffer } from '../utils'
 
 export const getAccount = (addr: string) => {
     return getConnection()
@@ -28,18 +29,21 @@ export const countAccountTransaction = (addr: string) => {
         .getCount()
 }
 
-export const getAccountTransaction = (addr: string, offset: number, limit: number) => {
-    return getConnection()
+export const getAccountTransaction = async (addr: string, offset: number, limit: number) => {
+    const conn = getConnection()
+
+    const txIDs = await conn.query(
+        `SELECT tx.id FROM transaction tx LEFT JOIN block ON tx.blockID = block.id WHERE tx.origin=? and block.isTrunk = ? ORDER BY tx.blockID DESC, tx.txIndex DESC LIMIT ? OFFSET ? `,
+        [hexToBuffer(addr), true, limit, offset]
+    ) as {id: string}[]
+
+    return await conn
         .getRepository(Transaction)
-        .createQueryBuilder('tx')
-        .where({ origin: addr })
-        .leftJoinAndSelect('tx.block', 'block')
-        .andWhere('block.isTrunk = :isTrunk', { isTrunk: true })
-        .orderBy('tx.blockID', 'DESC')
-        .addOrderBy('tx.txIndex', 'DESC')
-        .skip(offset)
-        .take(limit)
-        .getMany()
+        .find({
+            where: { id: In(txIDs.map(x => x.id)) },
+            order: { blockID: 'DESC', txIndex: 'DESC' },
+            relations: ['block']
+        })
 }
 
 export const countAccountTransfer = async (addr: string) => {
