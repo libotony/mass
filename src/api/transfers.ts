@@ -21,7 +21,7 @@ router.get('/recent', try$(async (req, res) => {
     const transfers = raw.map(x => {
         return {
             ...x,
-            token: AssetType[x.type],
+            symbol: AssetType[x.type],
             type: undefined,
             id: undefined,
             blockID: undefined,

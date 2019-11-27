@@ -87,7 +87,7 @@ router.get('/:address/transfers', try$(async (req, res) => {
         const transfers = raw.map(x => {
             return {
                 ...x,
-                token: AssetType[x.type],
+                symbol: AssetType[x.type],
                 type: undefined,
                 meta: {
                     blockID: x.blockID,
@@ -109,7 +109,7 @@ router.get('/:address/transfers', try$(async (req, res) => {
         const transfers = raw.map(x => {
             return {
                 ...x,
-                token: AssetType[x.type],
+                symbol: AssetType[x.type],
                 type: undefined,
                 meta: {
                     blockID: x.blockID,
