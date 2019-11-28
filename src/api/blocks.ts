@@ -28,7 +28,7 @@ router.get('/:revision', try$(async (req, res) => {
         }
         const ret = await getBlockByID(req.params.revision)
         if (!ret) {
-            throw new HttpError(404, 'block not found')
+            return res.json({ block: null, prev: null, next: null })
         }
         const nei = await getBlockNeighbourInTrunk(ret.number)
         b = { block: ret, prev:nei.prev, next:nei.next }
@@ -39,7 +39,7 @@ router.get('/:revision', try$(async (req, res) => {
         }
         const ret = await getBlockByNumber(num)
         if (!ret) {
-            throw new HttpError(404, 'block not found')
+            return res.json({ block: null, prev: null, next: null })
         }
         const nei = await getBlockNeighbourInTrunk(ret.number)
         b =  { block: ret, prev:nei.prev, next:nei.next }
