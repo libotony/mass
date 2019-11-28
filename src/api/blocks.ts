@@ -17,7 +17,7 @@ router.get('/recent', try$(async (req, res) => {
 
 router.get('/best', try$(async (req, res) => {
     const best = await getBest()
-    res.json(best)
+    res.json({block:best, prev: best.parentID, next:null})
 }))
 
 router.get('/:revision', try$(async (req, res) => {
