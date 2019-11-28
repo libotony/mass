@@ -1,12 +1,38 @@
 import { Router } from 'express'
 import { try$, HttpError } from 'express-toolbox'
-import { isHexBytes } from '../validator'
-import { getReceipt, getTransactionWithBlock } from '../db-service/transaction'
+import { isHexBytes, isUInt } from '../validator'
+import { getReceipt, getTransactionWithBlock, getRecentTransactions } from '../db-service/transaction'
 import { AssetType } from '../explorer-db/types'
 import { getTransferByTX } from '../db-service/transfer'
 
 const router = Router()
 export = router
+
+router.get('/recent', try$(async (req, res) => { 
+    let limit = 12
+    if (req.query.limit) {
+        const num = parseInt(req.query.limit)
+        if (isNaN(num)||!isUInt(num) || !num || num>50) { 
+            throw new HttpError(400, 'invalid limit')
+        }
+        limit = num
+    }
+    const raw = await getRecentTransactions(limit)
+    const txs = raw.map(x => {
+        return {
+            meta: {
+                blockID: x.blockID,
+                blockNumber: x.block.number,
+                blockTimestamp: x.block.timestamp
+            },
+            ...x,
+            id: undefined,
+            blockID: undefined,
+            block: undefined
+        }
+    })
+    res.json({txs})
+}))
 
 router.get('/:txid', try$(async (req, res) => {
     if (!isHexBytes(req.params.txid, 32)) {

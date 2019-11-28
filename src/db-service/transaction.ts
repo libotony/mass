@@ -1,4 +1,4 @@
-import { getConnection } from 'typeorm'
+import { getConnection, In } from 'typeorm'
 import { Transaction } from '../explorer-db/entity/transaction'
 import { Receipt } from '../explorer-db/entity/receipt'
 import { cache, keys } from './cache'
@@ -60,4 +60,22 @@ export const getReceipt = async (txID: string) => {
     }
 
     return receipt
+}
+
+export const getRecentTransactions = async (limit: number) => {
+    const conn = getConnection()
+
+    const txIDs = await conn.query(
+        `SELECT tx.id FROM transaction tx LEFT JOIN block ON tx.blockID = block.id WHERE block.isTrunk = ? ORDER BY tx.blockID DESC, tx.txIndex DESC LIMIT ?`,
+        [true, limit]
+    ) as { id: string }[]
+    
+
+    return await conn
+        .getRepository(Transaction)
+        .find({
+            where: { id: In(txIDs.map(x => x.id)) },
+            order: { blockID: 'DESC', txIndex: 'DESC' },
+            relations: ['block']
+        })
 }
