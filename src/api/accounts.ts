@@ -4,7 +4,7 @@ import { isHexBytes } from '../validator'
 import { getAccount, getTokenBalance, countAccountTransaction, getAccountTransaction, getAccountTransfer, getAccountTransferByType, countAccountTransferByType, countAccountTransfer } from '../db-service/account'
 import { getAuthority, getSignedBlocks } from '../db-service/authority'
 import { AssetType } from '../explorer-db/types'
-import { parseOffset, parseLimit, DEFAULT_LIMIT } from '../utils'
+import { parseOffset, parseLimit, DEFAULT_LIMIT, BLOCK_INTERVAL, ENERGY_GROWTH_RATE } from '../utils'
 
 const router = Router()
 export = router
@@ -14,19 +14,35 @@ router.get('/:address', try$(async (req, res) => {
         throw new HttpError(400, 'invalid address')
     }
     const addr = req.params.address
-    const account = await getAccount(addr)
+    let account = await getAccount(addr)
     const t = await getTokenBalance(addr)
     const authority = await getAuthority(addr)
-    if (!account && !t.length && !authority) {
-        throw new HttpError(404, 'address not found')
+    if (!account) {
+        account = {
+            address: addr,
+            balance: BigInt(0),
+            energy: BigInt(0),
+            blockTime: 0,
+            code: null,
+            master: null,
+            sponsor: null
+        }
     }
     const token: Array<{symbol:string, balance:bigint}> = []
     for (let x of t) {
         token.push({ symbol: AssetType[x.type], balance: x.balance })
     }
     
+    const ts = Math.floor(new Date().getTime()/1000)
+    const lastBlockTime = ts - ts % BLOCK_INTERVAL
+
+    account.energy = account.energy + account.balance * BigInt(lastBlockTime - account.blockTime) * ENERGY_GROWTH_RATE/BigInt(1e18)
+    
     res.json({
-        account: account ? account : null,
+        account: {
+            ...account,
+            blockTime: undefined
+        } ,
         token,
         authority: authority ? authority : null
     })
