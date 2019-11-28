@@ -56,9 +56,10 @@ router.get('/:address/transactions', try$(async (req, res) => {
     const offset = req.query.offset ? parseOffset(req.query.offset) : 0
     const limit = req.query.limit ? parseLimit(req.query.limit) : DEFAULT_LIMIT
 
+    const isAuthority = !!(await getAuthority(addr))
     const count = await countAccountTransaction(addr)
     if (!count || count <= offset) {
-        return res.json({count, transactions:[]})
+        return res.json({ count, transactions: [], isAuthority })
     }
     const raw = await getAccountTransaction(addr, offset, limit)
     const transactions = raw.map(x => {
@@ -73,7 +74,7 @@ router.get('/:address/transactions', try$(async (req, res) => {
         }
     })
 
-    res.json({count,transactions})
+    res.json({count,transactions, isAuthority})
 }))
 
 // query type limit offset
@@ -85,6 +86,7 @@ router.get('/:address/transfers', try$(async (req, res) => {
     const addr = req.params.address
     const offset = req.query.offset ? parseOffset(req.query.offset) : 0
     const limit = req.query.limit ? parseLimit(req.query.limit) : DEFAULT_LIMIT
+    const isAuthority = !!(await getAuthority(addr))
 
     let type: AssetType|null = null
     if (req.query.type) {
@@ -97,7 +99,7 @@ router.get('/:address/transfers', try$(async (req, res) => {
     if (type === null) {
         const count = await countAccountTransfer(addr)
         if (!count || count <= offset) {
-            return res.json({count, transfers:[]})
+            return res.json({count, transfers:[], isAuthority})
         }
         const raw = await getAccountTransfer(addr, offset, limit)
         const transfers = raw.map(x => {
@@ -115,11 +117,11 @@ router.get('/:address/transfers', try$(async (req, res) => {
                 id: undefined
             }
         })
-        res.json({count,transfers})
+        res.json({count,transfers, isAuthority})
     } else {
         const count = await countAccountTransferByType(addr, type)
         if (!count || count <= offset) {
-            return res.json({count, transfers:[]})
+            return res.json({count, transfers:[],isAuthority})
         }
         const raw = await getAccountTransferByType(addr, type, offset, limit)
         const transfers = raw.map(x => {
@@ -137,7 +139,7 @@ router.get('/:address/transfers', try$(async (req, res) => {
                 id: undefined
             }
         })
-        res.json({count,transfers})
+        res.json({count,transfers,isAuthority})
     }
 }))
 
@@ -151,7 +153,7 @@ router.get('/:address/signed', try$(async (req, res) => {
 
     const auth = await getAuthority(addr)
     if (!auth) {
-        throw new HttpError(400, 'not an authority')
+        return res.json({count:0, blocks:[]})
     }
 
     const count = auth.signed
