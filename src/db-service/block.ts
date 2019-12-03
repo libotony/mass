@@ -13,7 +13,7 @@ export interface Neighbour {
     next: string|null
 }
 
-export const getBest = async() => {
+export const getBest = async () => {
     if (cache.has(keys.BEST)) {
         return cache.get(keys.BEST) as Block
     }
@@ -24,9 +24,9 @@ export const getBest = async() => {
             order: {id: 'DESC'}
         }))!
     
-    const ts = now()
-    if (ts - b.timestamp < BLOCK_INTERVAL) {
-        cache.set(keys.BEST, b, ts-b.timestamp)
+    const gap = now() - b.timestamp
+    if (gap >= 0 && gap < BLOCK_INTERVAL) {
+        cache.set(keys.BEST, b, (BLOCK_INTERVAL-gap)*1000)
     }
     cache.set(keys.LAST_BEST, b.number)
 
