@@ -19,14 +19,13 @@ export const getTokenBalance = (addr: string) => {
         .find({where: {address: addr}, order: {type: 'ASC'}})
 }
 
-export const countAccountTransaction = (addr: string) => {
-    return getConnection()
-        .getRepository(Transaction)
-        .createQueryBuilder('tx')
-        .where({ origin: addr })
-        .leftJoin('tx.block', 'block')
-        .andWhere('block.isTrunk = :isTrunk', { isTrunk: true })
-        .getCount()
+export const countAccountTransaction = async (addr: string) => {
+    const acc = await getAccount(addr)
+    if (!acc) {
+        return 0
+    } else {
+        return acc.txCount
+    }
 }
 
 export const getAccountTransaction = async (addr: string, offset: number, limit: number) => {

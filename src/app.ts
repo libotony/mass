@@ -30,7 +30,7 @@ const replacer = (key: string, value: any) => {
 
 app.set('json replacer', replacer)
 
-// morgan('common") plus response time，for dev purpose 
+// morgan('common") plus response time, for dev purpose 
 app.use(Logger(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :response-time ms - :res[content-length]'))
     .use(Express.json())
     .use(Express.urlencoded({ extended: false }))
