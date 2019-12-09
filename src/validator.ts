@@ -1,9 +1,9 @@
 export function isHexString(val: string) {
-    return typeof val === 'string' && /^0x[0-9a-f]+$/i.test(val)
+    return typeof val === 'string' && /^0x[0-9a-f]+$/.test(val)
 }
 
 export function isHexBytes(val: string, n?: number) {
-    if (typeof val !== 'string' || !/^0x[0-9a-f]*$/i.test(val)) {
+    if (typeof val !== 'string' || !/^0x[0-9a-f]*$/.test(val)) {
         return false
     }
     return n ? val.length === n * 2 + 2 : val.length % 2 === 0

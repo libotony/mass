@@ -10,7 +10,7 @@ const router = Router()
 export = router
 
 router.get('/:address', try$(async (req, res) => {
-    if (!isHexBytes(req.params.address)) {
+    if (!isHexBytes(req.params.address, 20)) {
         throw new HttpError(400, 'invalid address')
     }
     const addr = req.params.address
@@ -50,7 +50,7 @@ router.get('/:address', try$(async (req, res) => {
 }))
 
 router.get('/:address/transactions', try$(async (req, res) => {
-    if (!isHexBytes(req.params.address)) {
+    if (!isHexBytes(req.params.address, 20)) {
         throw new HttpError(400, 'invalid address')
     }
     const addr = req.params.address
@@ -80,7 +80,7 @@ router.get('/:address/transactions', try$(async (req, res) => {
 // query type limit offset
 const AssetLiterals =  [  'VET', 'VTHO', 'PLA', 'SHA', 'EHrT', 'DBET', 'TIC', 'OCE', 'SNK', 'JUR', 'AQD', 'YEET']
 router.get('/:address/transfers', try$(async (req, res) => {
-    if (!isHexBytes(req.params.address)) {
+    if (!isHexBytes(req.params.address, 20)) {
         throw new HttpError(400, 'invalid address')
     }
     const addr = req.params.address
@@ -143,7 +143,7 @@ router.get('/:address/transfers', try$(async (req, res) => {
 }))
 
 router.get('/:address/signed', try$(async (req, res) => {
-    if (!isHexBytes(req.params.address)) {
+    if (!isHexBytes(req.params.address, 20)) {
         throw new HttpError(400, 'invalid address')
     }
     const addr = req.params.address
