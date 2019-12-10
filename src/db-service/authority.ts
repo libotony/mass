@@ -1,4 +1,4 @@
-import { getConnection, EntityManager, } from 'typeorm'
+import { getConnection } from 'typeorm'
 import { Authority } from '../explorer-db/entity/authority'
 import { Block } from '../explorer-db/entity/block'
 

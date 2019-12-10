@@ -133,8 +133,6 @@ export const getBlockNeighbourInTrunk = async (num: number) => {
     }
 
     return nei
-
-
 }
 
 export const getBlockTransactions = async (blockID: string) => {
@@ -158,34 +156,4 @@ export const getBlockTransactions = async (blockID: string) => {
     }
 
     return txs
-}
-
-export const getBlocksByID = async (ids: string[]) => {
-    const cached: Block[] = []
-    for (let [i,id] of ids.entries()) {
-        const key = keys.BLOCK_BY_ID(id)
-        if (cache.has(key)) {
-            cached.push(cache.get(key))
-            ids.splice(i, 1)
-        }
-    }
-
-    let blocks: Block[] = []
-    if (ids.length) {
-        blocks = await getConnection()
-            .getRepository(Block)
-            .find({
-                where: { id: In([...ids]) }
-            })
-
-        const best = cache.get(keys.LAST_BEST) as number
-        if (best) {
-            for (let b of blocks) {
-                if (best - blockIDtoNum(b.id) > REVERSIBLE_WINDOW) {
-                    cache.set(keys.BLOCK_BY_ID(b.id), b)
-                }
-            }
-        }
-    }
-    return cached.concat(blocks)
 }

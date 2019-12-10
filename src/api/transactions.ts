@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { try$, HttpError } from 'express-toolbox'
 import { isHexBytes, isUInt } from '../validator'
-import { getReceipt, getTransactionWithBlock, getRecentTransactions } from '../db-service/transaction'
+import { getTransactionWithMeta, getRecentTransactions } from '../db-service/transaction'
 import { AssetType } from '../explorer-db/types'
 import { getTransferByTX } from '../db-service/transfer'
 
@@ -26,7 +26,6 @@ router.get('/recent', try$(async (req, res) => {
                 blockTimestamp: x.block.timestamp
             },
             ...x,
-            id: undefined,
             blockID: undefined,
             block: undefined
         }
@@ -39,11 +38,15 @@ router.get('/:txid', try$(async (req, res) => {
         throw new HttpError(400, 'invalid id: bytes32 required')
     }
     const txid = req.params.txid
-    const tx = await getTransactionWithBlock(txid)
+    const tx = await getTransactionWithMeta(txid)
     if (!tx) {
-        throw new HttpError(404, 'transaction not found')
+        return res.json({
+            meta: null,
+            tx: null,
+            receipt: null,
+            transfers:[]
+        })
     }
-    const receipt = await getReceipt(txid)
 
     const raw = await getTransferByTX(txid)
     const transfers = raw.map(x => {
@@ -62,8 +65,8 @@ router.get('/:txid', try$(async (req, res) => {
             blockNumber: tx.block.number,
             blockTimestamp: tx.block.timestamp
         },
-        tx:{...tx, block: undefined, id: undefined, blockID: undefined},
-        receipt:{...receipt, id: undefined, blockID: undefined},
+        tx:{...tx, block: undefined, blockID: undefined, receipt: undefined},
+        receipt:{...tx.receipt, blockID: undefined},
         transfers
     })
 }))

@@ -70,7 +70,8 @@ router.get('/:address/transactions', try$(async (req, res) => {
                 blockNumber: x.block.number,
                 blockTimestamp: x.block.timestamp
             },
-            block:undefined
+            block: undefined,
+            blockID: undefined
         }
     })
 

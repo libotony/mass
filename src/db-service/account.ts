@@ -1,11 +1,9 @@
-import { getConnection, In } from 'typeorm'
+import { getConnection } from 'typeorm'
 import { Account } from '../explorer-db/entity/account'
 import { AssetMovement } from '../explorer-db/entity/movement'
 import { AssetType } from '../explorer-db/types'
 import { Transaction } from '../explorer-db/entity/transaction'
 import { TokenBalance } from '../explorer-db/entity/token-balance'
-import { getBlocksByID } from './block'
-import { hexToBuffer } from '../utils'
 
 export const getAccount = (addr: string) => {
     return getConnection()
@@ -28,21 +26,16 @@ export const countAccountTransaction = async (addr: string) => {
     }
 }
 
-export const getAccountTransaction = async (addr: string, offset: number, limit: number) => {
-    const conn = getConnection()
-
-    const txIDs = await conn.query(
-        `SELECT tx.id FROM transaction tx LEFT JOIN block ON tx.blockID = block.id WHERE tx.origin=? and block.isTrunk = ? ORDER BY tx.blockID DESC, tx.txIndex DESC LIMIT ? OFFSET ? `,
-        [hexToBuffer(addr), true, limit, offset]
-    ) as {id: string}[]
-
-    return await conn
+export const getAccountTransaction = (addr: string, offset: number, limit: number) => {
+    return getConnection()
         .getRepository(Transaction)
-        .find({
-            where: { id: In(txIDs.map(x => x.id)) },
-            order: { blockID: 'DESC', txIndex: 'DESC' },
-            relations: ['block']
-        })
+        .createQueryBuilder('tx')
+        .where({origin: addr})
+        .orderBy({ blockID: 'DESC', txIndex: 'DESC' })
+        .leftJoinAndSelect('tx.block', 'block')
+        .offset(offset)
+        .limit(limit)
+        .getMany()
 }
 
 export const countAccountTransfer = async (addr: string) => {
@@ -61,29 +54,16 @@ export const countAccountTransfer = async (addr: string) => {
     return senderCount + recipientCount
 }
 
-export const getAccountTransfer = async (addr: string, offset: number, limit: number) => {
-    const transfers = await getConnection()
+export const getAccountTransfer = (addr: string, offset: number, limit: number) => {
+    return getConnection()
         .getRepository(AssetMovement)
-        .find({
-            where: [{ sender: addr }, { recipient: addr }],
-            order: { blockID: 'DESC', moveIndex: 'DESC' },
-            skip: offset,
-            take: limit,
-        })
-    const ids = transfers
-        .map(x => x.blockID)
-        .reduce((acc: string[], cur) => {
-            if (acc.indexOf(cur) === -1) {
-                acc.push(cur)
-            }; return acc
-        }, [])
-    
-    const blocks = await getBlocksByID(ids)
-
-    for (let tr of transfers) {
-        tr.block = blocks.find(x=>x.id===tr.blockID)!
-    }    
-    return transfers
+        .createQueryBuilder('asset')
+        .where([{ sender: addr }, { recipient: addr }])
+        .orderBy({ blockID: 'DESC', moveIndex: 'DESC' })
+        .limit(limit)
+        .offset(offset)
+        .leftJoinAndSelect('asset.block', 'block')
+        .getMany()
 }
 
 export const countAccountTransferByType = async (addr: string, type: AssetType) => {
@@ -102,33 +82,19 @@ export const countAccountTransferByType = async (addr: string, type: AssetType) 
     return senderCount + recipientCount
 }
 
-export const getAccountTransferByType = async (
+export const getAccountTransferByType = (
     addr: string,
     type: AssetType,
     offset: number,
     limit: number
 ) => {
-    const transfers = await getConnection()
+    return getConnection()
         .getRepository(AssetMovement)
-        .find({
-            where: [{ sender: addr, type }, { recipient: addr, type }],
-            order: { blockID: 'DESC', moveIndex: 'DESC' },
-            skip: offset,
-            take: limit,
-        })
-
-    const ids = transfers
-        .map(x => x.blockID)
-        .reduce((acc: string[], cur) => {
-            if (acc.indexOf(cur) === -1) {
-                acc.push(cur)
-            }; return acc
-        }, [])
-    
-    const blocks = await getBlocksByID(ids)
-
-    for (let tr of transfers) {
-        tr.block = blocks.find(x=>x.id===tr.blockID)!
-    }    
-    return transfers
+        .createQueryBuilder('asset')
+        .where([{ sender: addr, type }, { recipient: addr, type }])
+        .orderBy({ blockID: 'DESC', moveIndex: 'DESC' })
+        .limit(limit)
+        .offset(offset)
+        .leftJoinAndSelect('asset.block', 'block')
+        .getMany()
 }

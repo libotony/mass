@@ -3,32 +3,15 @@ import { AssetMovement } from '../explorer-db/entity/movement'
 import { keys, cache } from './cache'
 import { Transaction } from '../explorer-db/entity/transaction'
 import { blockIDtoNum, REVERSIBLE_WINDOW } from '../utils'
-import { getBlocksByID } from './block'
 
-export const getRecentTransfers = async (limit: number) => {
-    const conn = getConnection()
-
-    const transfers = await conn
+export const getRecentTransfers = (limit: number) => {
+    return getConnection()
         .getRepository(AssetMovement)
-        .find({
-            order: { blockID: 'DESC', moveIndex: 'DESC' },
-            take: limit,
-        })
-
-    const ids = transfers
-        .map(x => x.blockID)
-        .reduce((acc: string[], cur) => {
-            if (acc.indexOf(cur) === -1) {
-                acc.push(cur)
-            }; return acc
-        }, [])
-    
-    
-    const blocks = await getBlocksByID(ids)
-    for (let tr of transfers) {
-        tr.block = blocks.find(x=>x.id===tr.blockID)!
-    }
-    return transfers
+        .createQueryBuilder('asset')
+        .orderBy({ blockID: 'DESC', moveIndex: 'DESC' })
+        .limit(limit)
+        .leftJoinAndSelect('asset.block', 'block')
+        .getMany()
 }
 
 export const getTransferByTX = async (txID: string) => {
