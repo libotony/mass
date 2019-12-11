@@ -4,7 +4,7 @@ import { isHexBytes } from '../validator'
 import { getAccount, getTokenBalance, countAccountTransaction, getAccountTransaction, getAccountTransfer, getAccountTransferByType, countAccountTransferByType, countAccountTransfer } from '../db-service/account'
 import { getAuthority, getSignedBlocks } from '../db-service/authority'
 import { AssetType } from '../explorer-db/types'
-import { parseOffset, parseLimit, DEFAULT_LIMIT, BLOCK_INTERVAL, ENERGY_GROWTH_RATE } from '../utils'
+import { parseOffset, parseLimit, DEFAULT_LIMIT, BLOCK_INTERVAL, ENERGY_GROWTH_RATE, AssetLiterals } from '../utils'
 
 const router = Router()
 export = router
@@ -78,8 +78,6 @@ router.get('/:address/transactions', try$(async (req, res) => {
     res.json({count,transactions})
 }))
 
-// query type limit offset
-const AssetLiterals =  [  'VET', 'VTHO', 'PLA', 'SHA', 'EHrT', 'DBET', 'TIC', 'OCE', 'SNK', 'JUR', 'AQD', 'YEET']
 router.get('/:address/transfers', try$(async (req, res) => {
     if (!isHexBytes(req.params.address, 20)) {
         throw new HttpError(400, 'invalid address')
