@@ -29,6 +29,9 @@ const replacer = (key: string, value: any) => {
 }
 
 app.set('json replacer', replacer)
+if (process.env['NODE_ENV'] === 'production') {
+    app.enable('trust proxy')
+}
 
 // morgan('common") plus response time, for dev purpose 
 app.use(Logger(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :response-time ms - :res[content-length]'))
