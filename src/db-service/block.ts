@@ -3,6 +3,7 @@ import { getConnection, In } from 'typeorm'
 import { cache, keys } from './cache'
 import { Transaction } from '../explorer-db/entity/transaction'
 import { REVERSIBLE_WINDOW, BLOCK_INTERVAL, blockIDtoNum } from '../utils'
+import { BranchTransaction } from '../explorer-db/entity/branch-transaction'
 
 const now = () => {
     return Math.floor(new Date().getTime()/1000)
@@ -156,4 +157,13 @@ export const getBlockTransactions = async (blockID: string) => {
     }
 
     return txs
+}
+
+export const getBranchBlockTransactions = (blockID: string) => {
+    return getConnection()
+        .getRepository(BranchTransaction)
+        .find({
+            where: { blockID },
+            order: {txIndex: 'ASC'}
+        })
 }

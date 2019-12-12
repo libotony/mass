@@ -1,9 +1,11 @@
 import { Router } from 'express'
 import { try$, HttpError } from 'express-toolbox'
 import { Block } from '../explorer-db/entity/block'
-import { getBest, getBlockByID, getBlockTransactions, getRecentBlocks, getBlockNeighbourInTrunk, getBlockByNumber } from '../db-service/block'
+import { getBest, getBlockByID, getBlockTransactions, getRecentBlocks, getBlockNeighbourInTrunk, getBlockByNumber, getBranchBlockTransactions } from '../db-service/block'
 import { isHexBytes, isUInt } from '../validator'
 import { parseLimit, DEFAULT_LIMIT } from '../utils'
+import { Transaction } from '../explorer-db/entity/transaction'
+import { BranchTransaction } from '../explorer-db/entity/branch-transaction'
 
 const router = Router()
 export = router
@@ -52,8 +54,30 @@ router.get('/:blockid/transactions', try$(async (req, res) => {
         throw new HttpError(400, 'invalid id: bytes32 required')
     }
     const blockID = req.params.blockid
-    const raw = await getBlockTransactions(blockID)
-    const block = (await getBlockByID(blockID))!
+    const block = (await getBlockByID(blockID))
+    if (!block) {
+        return res.json({meta: null, txs: []})
+    }
+
+    if (block.txCount === 0) {
+        return res.json({
+            meta: {
+                blockID: block.id,
+                blockNumber: block.number,
+                blockTimestamp: block.timestamp
+            },
+            txs:[]
+        })
+    }
+
+    let raw: Array<Transaction|BranchTransaction>
+
+    if (block.isTrunk) {
+        raw = await getBlockTransactions(blockID)
+    } else {
+        raw = await getBranchBlockTransactions(blockID)
+    }
+
     const txs = raw.map(x => {
         return {
             ...x,
