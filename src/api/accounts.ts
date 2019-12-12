@@ -29,9 +29,9 @@ router.get('/:address', try$(async (req, res) => {
             sponsor: null
         }
     }
-    const token: Array<{symbol:string, balance:bigint}> = []
+    const tokens: Array<{symbol:string, balance:bigint}> = []
     for (let x of t) {
-        token.push({ symbol: AssetType[x.type], balance: x.balance })
+        tokens.push({ symbol: AssetType[x.type], balance: x.balance })
     }
     
     const ts = Math.floor(new Date().getTime()/1000)
@@ -44,7 +44,7 @@ router.get('/:address', try$(async (req, res) => {
             ...account,
             blockTime: undefined
         } ,
-        token,
+        tokens,
         authority: authority ? {...authority, id: undefined} : null
     })
 }))
