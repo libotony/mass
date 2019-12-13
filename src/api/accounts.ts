@@ -59,10 +59,10 @@ router.get('/:address/transactions', try$(async (req, res) => {
 
     const count = await countAccountTransaction(addr)
     if (!count || count <= offset) {
-        return res.json({ count, transactions: [] })
+        return res.json({ count, txs: [] })
     }
     const raw = await getAccountTransaction(addr, offset, limit)
-    const transactions = raw.map(x => {
+    const txs = raw.map(x => {
         return {
             ...x,
             meta: {
@@ -75,7 +75,7 @@ router.get('/:address/transactions', try$(async (req, res) => {
         }
     })
 
-    res.json({count,transactions})
+    res.json({count, txs})
 }))
 
 router.get('/:address/transfers', try$(async (req, res) => {
