@@ -26,7 +26,9 @@ router.get('/:address', try$(async (req, res) => {
             txCount: 0,
             code: null,
             master: null,
-            sponsor: null
+            sponsor: null,
+            firstSeen: 0,
+            alias: null,
         }
     }
     const tokens: Array<{symbol:string, balance:bigint}> = []
