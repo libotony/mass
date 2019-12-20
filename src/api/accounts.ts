@@ -44,7 +44,9 @@ router.get('/:address', try$(async (req, res) => {
     res.json({
         account: {
             ...account,
-            blockTime: undefined
+            blockTime: undefined,
+            firstSeen: undefined,
+            alias: undefined
         } ,
         tokens,
         authority: authority ? {...authority, id: undefined} : null
