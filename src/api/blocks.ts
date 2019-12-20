@@ -6,6 +6,7 @@ import { isHexBytes, isUInt } from '../validator'
 import { parseLimit, DEFAULT_LIMIT } from '../utils'
 import { Transaction } from '../explorer-db/entity/transaction'
 import { BranchTransaction } from '../explorer-db/entity/branch-transaction'
+import { BranchReceipt } from '../explorer-db/entity/branch-receipt'
 
 const router = Router()
 export = router
@@ -70,7 +71,7 @@ router.get('/:blockid/transactions', try$(async (req, res) => {
         })
     }
 
-    let raw: Array<Transaction|BranchTransaction>
+    let raw: Array<Transaction | BranchTransaction& {receipt: BranchReceipt}>
 
     if (block.isTrunk) {
         raw = await getBlockTransactions(blockID)
@@ -81,6 +82,9 @@ router.get('/:blockid/transactions', try$(async (req, res) => {
     const txs = raw.map(x => {
         return {
             ...x,
+            receipt: {
+                reverted: x.receipt.reverted
+            },
             id: undefined,
             blockID: undefined
         }

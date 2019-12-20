@@ -35,8 +35,9 @@ export const getRecentTransactions = (limit: number) => {
     return getConnection()
         .getRepository(Transaction)
         .createQueryBuilder('tx')
-        .orderBy({ blockID: 'DESC', txIndex: 'DESC' })
+        .orderBy({ 'tx.blockID': 'DESC', 'tx.txIndex': 'DESC' })
         .limit(limit)
         .leftJoinAndSelect('tx.block', 'block')
+        .leftJoinAndSelect('tx.receipt', 'receipt')
         .getMany()
 }

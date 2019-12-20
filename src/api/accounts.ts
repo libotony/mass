@@ -69,6 +69,9 @@ router.get('/:address/transactions', try$(async (req, res) => {
     const txs = raw.map(x => {
         return {
             ...x,
+            receipt: {
+                reverted: x.receipt.reverted
+            },
             meta: {
                 blockID: x.blockID,
                 blockNumber: x.block.number,

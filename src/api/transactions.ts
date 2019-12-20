@@ -26,6 +26,9 @@ router.get('/recent', try$(async (req, res) => {
                 blockTimestamp: x.block.timestamp
             },
             ...x,
+            receipt: {
+                reverted: x.receipt.reverted
+            },
             blockID: undefined,
             block: undefined
         }

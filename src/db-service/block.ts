@@ -4,6 +4,7 @@ import { cache, keys } from './cache'
 import { Transaction } from '../explorer-db/entity/transaction'
 import { REVERSIBLE_WINDOW, BLOCK_INTERVAL, blockIDtoNum } from '../utils'
 import { BranchTransaction } from '../explorer-db/entity/branch-transaction'
+import { BranchReceipt } from '../explorer-db/entity/branch-receipt'
 
 const now = () => {
     return Math.floor(new Date().getTime()/1000)
@@ -146,7 +147,8 @@ export const getBlockTransactions = async (blockID: string) => {
         .getRepository(Transaction)
         .find({
             where: { blockID },
-            order: {txIndex: 'ASC'}
+            order: { txIndex: 'ASC' },
+            relations: ['receipt']
         })
     
     const best = cache.get(keys.LAST_BEST) as number
@@ -159,11 +161,30 @@ export const getBlockTransactions = async (blockID: string) => {
     return txs
 }
 
-export const getBranchBlockTransactions = (blockID: string) => {
-    return getConnection()
+export const getBranchBlockTransactions = async (blockID: string) => {
+    const conn = await getConnection()
+    const txs = await conn
         .getRepository(BranchTransaction)
         .find({
             where: { blockID },
             order: {txIndex: 'ASC'}
         })
+    
+    const receipts = await conn
+        .getRepository(BranchReceipt)
+        .find({
+            where: { blockID },
+            order: { txIndex: 'ASC' }
+        })
+    
+    const ret: Array<BranchTransaction & {receipt: BranchReceipt}>= []
+    
+    for (let tx of txs) {
+        ret.push({
+            ...tx,
+            receipt: (receipts.find(x=>x.txID===tx.txID))!
+        })
+    }
+
+    return ret
 }
