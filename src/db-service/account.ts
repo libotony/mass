@@ -1,4 +1,4 @@
-import { getConnection } from 'typeorm'
+import { getConnection, In } from 'typeorm'
 import { Account } from '../explorer-db/entity/account'
 import { AssetMovement } from '../explorer-db/entity/movement'
 import { AssetType } from '../explorer-db/types'
@@ -26,17 +26,25 @@ export const countAccountTransaction = async (addr: string) => {
     }
 }
 
-export const getAccountTransaction = (addr: string, offset: number, limit: number) => {
-    return getConnection()
+export const getAccountTransaction = async (addr: string, offset: number, limit: number) => {
+    const conn = getConnection()
+    const ids = await conn
         .getRepository(Transaction)
-        .createQueryBuilder('tx')
-        .where({origin: addr})
-        .orderBy({ 'tx.blockID': 'DESC', 'tx.txIndex': 'DESC' })
-        .leftJoinAndSelect('tx.block', 'block')
-        .leftJoinAndSelect('tx.receipt', 'receipt')
-        .offset(offset)
-        .limit(limit)
-        .getMany()
+        .find({
+            select: ['txID'],
+            where: { origin: addr },
+            take: limit,
+            skip: offset,
+            order: { blockID: 'DESC', txIndex: 'DESC' }
+        })
+    const txs = await conn
+        .getRepository(Transaction)
+        .find({
+            where: { txID: In(ids.map(x => x.txID)) },
+            order: { blockID: 'DESC', txIndex: 'DESC' },
+            relations:['block', 'receipt']
+        })    
+    return txs
 }
 
 export const countAccountTransfer = async (addr: string) => {
@@ -51,19 +59,19 @@ export const countAccountTransfer = async (addr: string) => {
         .count({
             where: { recipient: addr }
         })
-    
+
     return senderCount + recipientCount
 }
 
 export const getAccountTransfer = (addr: string, offset: number, limit: number) => {
     return getConnection()
         .getRepository(AssetMovement)
-        .createQueryBuilder('asset')
+        .createQueryBuilder('transfer')
         .where([{ sender: addr }, { recipient: addr }])
         .orderBy({ blockID: 'DESC', moveIndex: 'DESC' })
         .limit(limit)
         .offset(offset)
-        .leftJoinAndSelect('asset.block', 'block')
+        .leftJoinAndSelect('transfer.block', 'block')
         .getMany()
 }
 
@@ -91,11 +99,11 @@ export const getAccountTransferByType = (
 ) => {
     return getConnection()
         .getRepository(AssetMovement)
-        .createQueryBuilder('asset')
+        .createQueryBuilder('transfer')
         .where([{ sender: addr, type }, { recipient: addr, type }])
         .orderBy({ blockID: 'DESC', moveIndex: 'DESC' })
         .limit(limit)
         .offset(offset)
-        .leftJoinAndSelect('asset.block', 'block')
+        .leftJoinAndSelect('transfer.block', 'block')
         .getMany()
 }
