@@ -2,6 +2,7 @@ import { HttpError } from 'express-toolbox'
 import { isUInt } from '../validator'
 
 export const MAX_LIMIT = 50
+export const MAX_OFFSET = 50000
 export const DEFAULT_LIMIT = 20
 export const BLOCK_INTERVAL = 10
 export const REVERSIBLE_WINDOW = 12
@@ -20,10 +21,13 @@ export const parseLimit = (limit: string, maximum=MAX_LIMIT):number => {
     return num
 }
 
-export const parseOffset = (offset: string): number => {
+export const parseOffset = (offset: string, maximum=MAX_OFFSET): number => {
     const num = parseInt(offset)
     if (isNaN(num)||!isUInt(num)) { 
         throw new HttpError(400, 'invalid offset')
+    }
+    if (num > maximum) {
+        throw new HttpError(403, 'offset too large')
     }
     return num
 }
