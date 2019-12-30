@@ -1,9 +1,9 @@
 import { getConnection, In } from 'typeorm'
 import { Account } from '../explorer-db/entity/account'
-import { AssetMovement } from '../explorer-db/entity/movement'
 import { AssetType } from '../explorer-db/types'
 import { Transaction } from '../explorer-db/entity/transaction'
 import { TokenBalance } from '../explorer-db/entity/token-balance'
+import { AggregatedMovement } from '../explorer-db/entity/aggregated-move'
 
 export const getAccount = (addr: string) => {
     return getConnection()
@@ -47,63 +47,67 @@ export const getAccountTransaction = async (addr: string, offset: number, limit:
     return txs
 }
 
-export const countAccountTransfer = async (addr: string) => {
-    const senderCount = await getConnection()
-        .getRepository(AssetMovement)
-        .count({
-            where: { sender: addr }
-        })
-    
-    const recipientCount = await getConnection()
-        .getRepository(AssetMovement)
-        .count({
-            where: { recipient: addr }
-        })
-
-    return senderCount + recipientCount
-}
-
-export const getAccountTransfer = (addr: string, offset: number, limit: number) => {
+export const countAccountTransfer = (addr: string) => {
     return getConnection()
-        .getRepository(AssetMovement)
-        .createQueryBuilder('transfer')
-        .where([{ sender: addr }, { recipient: addr }])
-        .orderBy({ blockID: 'DESC', moveIndex: 'DESC' })
-        .limit(limit)
-        .offset(offset)
-        .leftJoinAndSelect('transfer.block', 'block')
-        .getMany()
+        .getRepository(AggregatedMovement)
+        .count({participant: addr})
 }
 
-export const countAccountTransferByType = async (addr: string, type: AssetType) => {
-        const senderCount = await getConnection()
-        .getRepository(AssetMovement)
-        .count({
-            where: { sender: addr, type }
+export const getAccountTransfer = async (addr: string, offset: number, limit: number) => {
+    const conn = getConnection()
+
+    const ids = await conn
+        .getRepository(AggregatedMovement)
+        .find({
+            select: ['id'],
+            where: { participant: addr },
+            order: { seq: 'DESC' },
+            take: limit,
+            skip: offset
         })
     
-    const recipientCount = await getConnection()
-        .getRepository(AssetMovement)
-        .count({
-            where: { recipient: addr, type }
+    const aggregated = await conn
+        .getRepository(AggregatedMovement)
+        .find({
+            where: { id: In(ids.map(x => x.id)) },
+            order: { seq: 'DESC' },
+            relations:[ 'movement', 'movement.block' ]
         })
     
-    return senderCount + recipientCount
+    return aggregated.map(x=>x.movement)
 }
 
-export const getAccountTransferByType = (
+export const countAccountTransferByType = (addr: string, type: AssetType) => {
+    return getConnection()
+        .getRepository(AggregatedMovement)
+        .count({participant: addr, type})
+}
+
+export const getAccountTransferByType = async (
     addr: string,
     type: AssetType,
     offset: number,
     limit: number
 ) => {
-    return getConnection()
-        .getRepository(AssetMovement)
-        .createQueryBuilder('transfer')
-        .where([{ sender: addr, type }, { recipient: addr, type }])
-        .orderBy({ blockID: 'DESC', moveIndex: 'DESC' })
-        .limit(limit)
-        .offset(offset)
-        .leftJoinAndSelect('transfer.block', 'block')
-        .getMany()
+    const conn = getConnection()
+
+    const ids = await conn
+        .getRepository(AggregatedMovement)
+        .find({
+            select: ['id'],
+            where: { participant: addr, type },
+            order: { seq: 'DESC' },
+            take: limit,
+            skip: offset
+        })
+    
+    const aggregated = await conn
+        .getRepository(AggregatedMovement)
+        .find({
+            where: { id: In(ids.map(x => x.id)) },
+            order: { seq: 'DESC' },
+            relations:[ 'movement', 'movement.block' ]
+        })
+    
+    return aggregated.map(x=>x.movement)
 }
