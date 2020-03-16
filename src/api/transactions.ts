@@ -59,7 +59,8 @@ router.get('/:txid', try$(async (req, res) => {
         return {
             ...x,
             symbol: AssetType[x.asset],
-            meta:{...x.moveIndex},
+            meta: { ...x.moveIndex },
+            moveIndex: undefined, 
             asset: undefined,
             type: undefined,
             blockID: undefined,
