@@ -1,10 +1,9 @@
 import { Router } from 'express'
 import { try$, HttpError } from 'express-toolbox'
 import { isHexBytes, isUInt } from '../validator'
-import { getTransactionWithMeta, getRecentTransactions } from '../db-service/transaction'
 import { AssetType } from '../explorer-db/types'
+import { getRecentTransactions, getTransaction } from '../db-service/transaction'
 import { getTransferByTX } from '../db-service/transfer'
-import { moveIndex } from '../explorer-db/transformers'
 
 const router = Router()
 export = router
@@ -20,20 +19,29 @@ router.get('/recent', try$(async (req, res) => {
     }
     const raw = await getRecentTransactions(limit)
     const txs = raw.map(x => {
+        const tx=x.transaction
         return {
-            ...x,
+            txID: x.txID,
+            chainTag: tx.chainTag,
+            blockRef: tx.blockRef,
+            expiration: tx.expiration,
+            gasPriceCoef: tx.gasPriceCoef,
+            gas: tx.gas,
+            nonce: tx.nonce,
+            dependsOn: tx.dependsOn,
+            origin: tx.origin,
+            delegator: tx.delegator,
+            clauses: tx.clauses,
+            size: tx.size,
             receipt: {
-                reverted: x.receipt.reverted
+                reverted: tx.reverted
             },
             meta: {
                 blockID: x.blockID,
                 blockNumber: x.block.number,
                 blockTimestamp: x.block.timestamp,
-                txIndex: x.txIndex
-            },
-            txIndex: undefined,
-            blockID: undefined,
-            block: undefined
+                txIndex: x.seq.txIndex
+            }
         }
     })
     res.json({txs})
@@ -44,7 +52,7 @@ router.get('/:txid', try$(async (req, res) => {
         throw new HttpError(400, 'invalid id: bytes32 required')
     }
     const txid = req.params.txid
-    const tx = await getTransactionWithMeta(txid)
+    const tx = await getTransaction(txid)
     if (!tx) {
         return res.json({
             meta: null,
@@ -69,8 +77,29 @@ router.get('/:txid', try$(async (req, res) => {
     })
 
     res.json({
-        tx:{...tx, block: undefined, blockID: undefined, receipt: undefined, txIndex: undefined},
-        receipt:{...tx.receipt, blockID: undefined, txIndex: undefined},
+        tx: {
+            txID: tx.txID,
+            chainTag: tx.transaction.chainTag,
+            blockRef: tx.transaction.blockRef,
+            expiration: tx.transaction.expiration,
+            gasPriceCoef: tx.transaction.gasPriceCoef,
+            gas: tx.transaction.gas,
+            nonce: tx.transaction.nonce,
+            dependsOn: tx.transaction.dependsOn,
+            origin: tx.transaction.origin,
+            delegator: tx.transaction.delegator,
+            clauses: tx.transaction.clauses,
+            size: tx.transaction.size,
+        },
+        receipt: {
+            txID: tx.txID,
+            gasUsed: tx.transaction.gasUsed,
+            gasPayer: tx.transaction.gasPayer,
+            paid: tx.transaction.paid,
+            reward: tx.transaction.reward,
+            reverted: tx.transaction.reverted,
+            outputs: tx.transaction.outputs
+        },
         transfers,
         meta: {
             blockID: tx.blockID,

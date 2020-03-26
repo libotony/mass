@@ -77,19 +77,29 @@ router.get('/:address/transactions', try$(async (req, res) => {
         }
         const raw = await getAccountTransaction(addr, offset, limit)
         const txs = raw.map(x => {
+            const tx=x.transaction
             return {
-                ...x.transaction,
+                txID: x.txID,
+                chainTag: tx.chainTag,
+                blockRef: tx.blockRef,
+                expiration: tx.expiration,
+                gasPriceCoef: tx.gasPriceCoef,
+                gas: tx.gas,
+                nonce: tx.nonce,
+                dependsOn: tx.dependsOn,
+                origin: tx.origin,
+                delegator: tx.delegator,
+                clauses: tx.clauses,
+                size: tx.size,
                 receipt: {
-                    reverted: x.receipt.reverted
+                    reverted: tx.reverted
                 },
                 meta: {
                     blockID: x.blockID,
                     blockNumber: x.block.number,
                     blockTimestamp: x.block.timestamp,
                     txIndex: x.seq.txIndex
-                },
-                blockID: undefined,
-                txIndex: undefined
+                }
             }
         })
         res.json({ count, txs })
@@ -100,19 +110,29 @@ router.get('/:address/transactions', try$(async (req, res) => {
         }
         const raw = await getAccountTransactionByType(addr, type,offset, limit)
         const txs = raw.map(x => {
+            const tx=x.transaction
             return {
-                ...x.transaction,
+                txID: x.txID,
+                chainTag: tx.chainTag,
+                blockRef: tx.blockRef,
+                expiration: tx.expiration,
+                gasPriceCoef: tx.gasPriceCoef,
+                gas: tx.gas,
+                nonce: tx.nonce,
+                dependsOn: tx.dependsOn,
+                origin: tx.origin,
+                delegator: tx.delegator,
+                clauses: tx.clauses,
+                size: tx.size,
                 receipt: {
-                    reverted: x.receipt.reverted
+                    reverted: tx.reverted
                 },
                 meta: {
                     blockID: x.blockID,
                     blockNumber: x.block.number,
                     blockTimestamp: x.block.timestamp,
                     txIndex: x.seq.txIndex
-                },
-                blockID: undefined,
-                txIndex: undefined
+                }
             }
         })
         res.json({ count, txs })

@@ -1,10 +1,10 @@
 import { getConnection, In } from 'typeorm'
-import { AssetMovement } from '../explorer-db/entity/movement'
 import { keys, cache } from './cache'
-import { Transaction } from '../explorer-db/entity/transaction'
 import { blockIDtoNum, REVERSIBLE_WINDOW } from '../utils'
+import { AssetMovement } from '../explorer-db/entity/movement'
 import { AggregatedMovement } from '../explorer-db/entity/aggregated-move'
 import { AssetType } from '../explorer-db/types'
+import { TransactionMeta } from '../explorer-db/entity/tx-meta'
 
 export const getRecentTransfers = (limit: number) => {
     return getConnection()
@@ -16,7 +16,7 @@ export const getRecentTransfers = (limit: number) => {
         .getMany()
 }
 
-export const getTransferByTX = async (tx: Transaction) => {
+export const getTransferByTX = async (tx: TransactionMeta) => {
     const { txID } =  tx
     const key = keys.TX_TRANSFER(txID)
     if (cache.has(key)) {

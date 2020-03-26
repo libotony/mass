@@ -1,23 +1,22 @@
 import { getConnection, In } from 'typeorm'
-import { Transaction } from '../explorer-db/entity/transaction'
 import { cache, keys } from './cache'
 import { REVERSIBLE_WINDOW, blockIDtoNum } from '../utils'
 import { AggregatedTransaction } from '../explorer-db/entity/aggregated-tx'
 import { MoveType } from '../explorer-db/types'
+import { TransactionMeta } from '../explorer-db/entity/tx-meta'
 
-export const getTransactionWithMeta = async (txID: string) => {
+export const getTransaction = async (txID: string) => {
     const key = keys.TX(txID)
     if (cache.has(key)) {
-        return cache.get(key) as Transaction
+        return cache.get(key) as TransactionMeta
     }
 
     const tx = await getConnection()
-        .getRepository(Transaction)
-        .createQueryBuilder('tx')
-        .where({ txID })
-        .leftJoinAndSelect('tx.block', 'block')
-        .leftJoinAndSelect('tx.receipt', 'receipt')
-        .getOne()
+        .getRepository(TransactionMeta)
+        .findOne({
+            where:{txID},
+            relations: ['transaction', 'block']
+        })
     
     if (!tx) {
         return tx
@@ -33,15 +32,24 @@ export const getTransactionWithMeta = async (txID: string) => {
     return tx
 }
 
-export const getRecentTransactions = (limit: number) => {
-    return getConnection()
-        .getRepository(Transaction)
-        .createQueryBuilder('tx')
-        .orderBy({ 'tx.blockID': 'DESC', 'tx.txIndex': 'DESC' })
-        .limit(limit)
-        .leftJoinAndSelect('tx.block', 'block')
-        .leftJoinAndSelect('tx.receipt', 'receipt')
-        .getMany()
+export const getRecentTransactions = async (limit: number) => {
+    const conn = getConnection()
+    const ids = await conn
+        .getRepository(TransactionMeta)
+        .find({
+            select: ['txID'],
+            order: { seq: 'DESC' },
+            take: limit,
+        })
+    
+    const txs = await conn
+        .getRepository(TransactionMeta)
+        .find({
+            where: { txID: In(ids.map(x => x.txID)) },
+            order: { seq: 'DESC' },
+            relations: ['transaction', 'block']
+        })
+    return txs
 }
 
 export const countAccountTransaction = (addr: string) => {
@@ -66,7 +74,7 @@ export const getAccountTransaction = async (addr: string, offset: number, limit:
         .find({
             where: { id: In(ids.map(x => x.id)) },
             order: { seq: 'DESC'},
-            relations:['block', 'transaction', 'receipt']
+            relations:['block', 'transaction']
         })
     return txs
 }
@@ -98,7 +106,7 @@ export const getAccountTransactionByType = async (
         .find({
             where: { id: In(ids.map(x => x.id)) },
             order: { seq: 'DESC'},
-            relations:['block', 'transaction', 'receipt']
+            relations:['block', 'transaction']
         })
     return txs
 }

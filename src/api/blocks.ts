@@ -4,9 +4,6 @@ import { Block } from '../explorer-db/entity/block'
 import { getBest, getBlockByID, getBlockTransactions, getRecentBlocks, getBlockNeighbourInTrunk, getBlockByNumber, getBranchBlockTransactions } from '../db-service/block'
 import { isHexBytes, isUInt } from '../validator'
 import { parseLimit, DEFAULT_LIMIT } from '../utils'
-import { Transaction } from '../explorer-db/entity/transaction'
-import { BranchTransaction } from '../explorer-db/entity/branch-transaction'
-import { BranchReceipt } from '../explorer-db/entity/branch-receipt'
 
 const router = Router()
 export = router
@@ -71,31 +68,62 @@ router.get('/:blockid/transactions', try$(async (req, res) => {
         })
     }
 
-    let raw: Array<Transaction | BranchTransaction& {receipt: BranchReceipt}>
-
     if (block.isTrunk) {
-        raw = await getBlockTransactions(blockID)
+        const raw = await getBlockTransactions(blockID)
+        return res.json({
+            txs: raw.map(x => {
+                const tx = x.transaction
+                return {
+                    txID: x.txID,
+                    chainTag: tx.chainTag,
+                    blockRef: tx.blockRef,
+                    expiration: tx.expiration,
+                    gasPriceCoef: tx.gasPriceCoef,
+                    gas: tx.gas,
+                    nonce: tx.nonce,
+                    dependsOn: tx.dependsOn,
+                    origin: tx.origin,
+                    delegator: tx.delegator,
+                    clauses: tx.clauses,
+                    size: tx.size,
+                    receipt: {
+                        reverted: tx.reverted
+                    }
+                }
+            }),
+            meta: {
+                blockID: block.id,
+                blockNumber: block.number,
+                blockTimestamp: block.timestamp
+            }
+        })
     } else {
-        raw = await getBranchBlockTransactions(blockID)
-    }
-
-    const txs = raw.map(x => {
-        return {
-            ...x,
-            receipt: {
-                reverted: x.receipt.reverted
-            },
-            txIndex: undefined,
-            id: undefined,
-            blockID: undefined
-        }
-    })
-    res.json({
-        txs,
-        meta: {
-            blockID: block.id,
-            blockNumber: block.number,
-            blockTimestamp: block.timestamp
-        }
-    })
+        const raw = await getBranchBlockTransactions(blockID)
+        return res.json({
+            txs: raw.map(tx => {
+                return {
+                    txID: tx.txID,
+                    chainTag: tx.chainTag,
+                    blockRef: tx.blockRef,
+                    expiration: tx.expiration,
+                    gasPriceCoef: tx.gasPriceCoef,
+                    gas: tx.gas,
+                    nonce: tx.nonce,
+                    dependsOn: tx.dependsOn,
+                    origin: tx.origin,
+                    delegator: tx.delegator,
+                    clauses: tx.clauses,
+                    size: tx.size,
+                    receipt: {
+                        reverted: tx.reverted
+                    }
+                }
+            }),
+            meta: {
+                blockID: block.id,
+                blockNumber: block.number,
+                blockTimestamp: block.timestamp
+            }
+        })
+    }    
 }))
