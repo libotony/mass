@@ -1,10 +1,9 @@
 import { Block } from '../explorer-db/entity/block'
 import { getConnection, In } from 'typeorm'
 import { cache, keys } from './cache'
-import { Transaction } from '../explorer-db/entity/transaction'
 import { REVERSIBLE_WINDOW, BLOCK_INTERVAL, blockIDtoNum } from '../utils'
+import { TransactionMeta } from '../explorer-db/entity/tx-meta'
 import { BranchTransaction } from '../explorer-db/entity/branch-transaction'
-import { BranchReceipt } from '../explorer-db/entity/branch-receipt'
 
 const now = () => {
     return Math.floor(new Date().getTime()/1000)
@@ -140,15 +139,15 @@ export const getBlockNeighbourInTrunk = async (num: number) => {
 export const getBlockTransactions = async (blockID: string) => {
     const key = keys.BLOCK_TX(blockID)
     if (cache.has(key)) {
-        return cache.get(key) as Transaction[]
+        return cache.get(key) as TransactionMeta[]
     }
 
     const txs = getConnection()
-        .getRepository(Transaction)
+        .getRepository(TransactionMeta)
         .find({
             where: { blockID },
-            order: { txIndex: 'ASC' },
-            relations: ['receipt']
+            order: { seq: 'ASC' },
+            relations: ['transaction']
         })
     
     const best = cache.get(keys.LAST_BEST) as number
@@ -162,29 +161,13 @@ export const getBlockTransactions = async (blockID: string) => {
 }
 
 export const getBranchBlockTransactions = async (blockID: string) => {
-    const conn = await getConnection()
+    const conn = getConnection()
     const txs = await conn
         .getRepository(BranchTransaction)
         .find({
             where: { blockID },
-            order: {txIndex: 'ASC'}
+            order: {seq: 'ASC'}
         })
     
-    const receipts = await conn
-        .getRepository(BranchReceipt)
-        .find({
-            where: { blockID },
-            order: { txIndex: 'ASC' }
-        })
-    
-    const ret: Array<BranchTransaction & {receipt: BranchReceipt}>= []
-    
-    for (let tx of txs) {
-        ret.push({
-            ...tx,
-            receipt: (receipts.find(x=>x.txID===tx.txID))!
-        })
-    }
-
-    return ret
+    return txs
 }

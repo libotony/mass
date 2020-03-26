@@ -10,8 +10,6 @@ export const keys = {
     BLOCK_BY_NUMBER: (blockNumber: number) => { return 'BLOCK_BY_NUMBER' + blockNumber },
     BLOCK_NEIGHBOUR: (blockNumber: number) => { return 'BLOCK_NEIGHBOUR' + blockNumber },
     BLOCK_TX: (blockID: string) => { return 'BLOCK_TX' + blockID },
-    BLOCK_RECEIPT: (blockID: string) => { return 'BLOCK_RECEIPT' + blockID },
     TX: (txID: string) => { return 'TX' + txID },
-    RECEIPT: (txID: string) => { return 'RECEIPT' + txID },
     TX_TRANSFER: (txID: string) => { return 'TX_TRANSFER' + txID },
 }
