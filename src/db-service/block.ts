@@ -1,5 +1,5 @@
 import { Block } from '../explorer-db/entity/block'
-import { getConnection, In } from 'typeorm'
+import { getConnection, In, LessThanOrEqual, MoreThanOrEqual } from 'typeorm'
 import { cache, keys } from './cache'
 import { REVERSIBLE_WINDOW, BLOCK_INTERVAL, blockIDtoNum } from '../utils'
 import { TransactionMeta } from '../explorer-db/entity/tx-meta'
@@ -170,4 +170,26 @@ export const getBranchBlockTransactions = async (blockID: string) => {
         })
     
     return txs
+}
+
+// if lessThan = true, returns the highest block whose timestamp <= ts
+// if lessThan = false, returns the lowest block whose timestamp >= ts
+export const getBlockByTime = (ts: number, lessThan=true) => {
+    if (lessThan) {
+        return getConnection()
+            .getRepository(Block)
+            .findOne({
+                timestamp: LessThanOrEqual(ts)
+            }, {
+                order: { timestamp: 'DESC' }
+            })
+    } else {
+        return getConnection()
+            .getRepository(Block)
+            .findOne({
+                timestamp: MoreThanOrEqual(ts)
+            }, {
+                order: { timestamp: 'ASC' }
+            })
+    }
 }

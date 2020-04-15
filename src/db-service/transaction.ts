@@ -42,6 +42,10 @@ export const getRecentTransactions = async (limit: number) => {
             take: limit,
         })
     
+    if (!ids.length) {
+        return []
+    }
+
     const txs = await conn
         .getRepository(TransactionMeta)
         .find({
@@ -69,6 +73,9 @@ export const getAccountTransaction = async (addr: string, offset: number, limit:
             skip: offset,
             order: { seq: 'DESC' }
         })
+    if (!ids.length) {
+        return []
+    }
     const txs = await conn
         .getRepository(AggregatedTransaction)
         .find({
@@ -101,6 +108,9 @@ export const getAccountTransactionByType = async (
             skip: offset,
             order: { seq: 'DESC' }
         })
+    if (!ids.length) {
+        return []
+    }
     const txs = await conn
         .getRepository(AggregatedTransaction)
         .find({
