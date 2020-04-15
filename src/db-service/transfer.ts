@@ -1,4 +1,4 @@
-import { getConnection, In } from 'typeorm'
+import { getConnection, In, Between } from 'typeorm'
 import { keys, cache } from './cache'
 import { blockIDtoNum, REVERSIBLE_WINDOW } from '../utils'
 import { AssetMovement } from '../explorer-db/entity/movement'
@@ -58,6 +58,10 @@ export const getAccountTransfer = async (addr: string, offset: number, limit: nu
             skip: offset
         })
     
+    if (!ids.length) {
+        return []
+    }
+    
     const aggregated = await conn
         .getRepository(AggregatedMovement)
         .find({
@@ -93,6 +97,10 @@ export const getAccountTransferByAsset = async (
             skip: offset
         })
     
+    if (!ids.length) {
+        return []
+    }
+    
     const aggregated = await conn
         .getRepository(AggregatedMovement)
         .find({
@@ -103,3 +111,39 @@ export const getAccountTransferByAsset = async (
     
     return aggregated
 }
+
+export const getAccountTransferByRange = async (addr: string, fromBlock: number, toBlock: number, limit=5000)=>{
+    const conn = getConnection()
+
+    const ids = await conn
+        .getRepository(AggregatedMovement)
+        .find({
+            select: ['id'],
+            where: {
+                participant: addr,
+                seq: Between({
+                    blockNumber: fromBlock,
+                    moveIndex: {txIndex: 0,clauseIndex: 0,logIndex: 0}
+                }, {
+                    blockNumber: toBlock,
+                    moveIndex: {txIndex: 65535,clauseIndex: 0,logIndex: 0}
+                })
+            },
+            order: { seq: 'ASC' },
+            take: limit,
+        })
+
+    if (!ids.length) {
+        return []
+    }
+    const aggregated = await conn
+        .getRepository(AggregatedMovement)
+        .find({
+            where: { id: In(ids.map(x => x.id)) },
+            order: { seq: 'ASC' },
+            relations:[ 'movement', 'movement.block', 'movement.transaction' ]
+        })
+
+    return aggregated
+}
+
