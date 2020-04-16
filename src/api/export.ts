@@ -22,7 +22,7 @@ router.post('/transfers/:address', try$(async (req, res) => {
     }
     const addr = req.params.address
     const from = Date.parse(req.body.from)/1000
-    const to = Date.parse(req.body.to) / 1000
+    const to = Date.parse(req.body.to) / 1000 + 24 * 60 * 60 - 10
 
     const fromBlock =  await getBlockByTime(from, false)
     const toBlock = await getBlockByTime(to, true)
