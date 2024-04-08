@@ -21,7 +21,7 @@ Backend of VeChain Official [Explorer](https://explore.vechain.org).
 ### Clone Source
 
 ``` shell
-git clone  --recursive https://github.com/vechain/mass.git
+git clone --recursive https://github.com/vechain/mass.git
 cd mass
 ```
 
@@ -41,3 +41,48 @@ Follow the official [instruction](https://typeorm.io/#/using-ormconfig), configu
 ``` shell
 npm start
 ```
+
+### Setting up the local environment
+
+Build docker images for the following repos. 
+```
+git clone --recursive https://github.com/vechain/mass
+cd mass
+docker build . -t vechain/mass
+
+git clone https://github.com/vechain/explorer
+cd explorer
+docker build . -t vechain/explorer
+
+git clone --recursive https://github.com/vechain/chain-scanner
+cd chain-scanner
+docker build . -t vechain/chain-scanner
+```
+
+#### Spin up the project for local environment
+```
+cp .env.example .env
+```
+
+```
+TYPEORM_CONNECTION=mysql
+TYPEORM_HOST=db
+TYPEORM_USERNAME=user
+TYPEORM_PASSWORD=password
+TYPEORM_DATABASE=chain
+TYPEORM_PORT=3306
+TYPEORM_ENTITIES=dist/explorer-db/entity/*.js
+TYPEORM_MIGRATIONS=dist/migrations/*.js
+THOR_REST=https://mainnet.live.dev.node.vechain.org
+NETWORK=mainnet
+NODE_ENV=production
+API_URL=http://api:3000
+CAPTCHA_SECRET=CAPTCHA_SECRET
+```
+
+#### Spin up the project pointing to the local environment by running docker compose
+
+```
+docker compose up
+```
+

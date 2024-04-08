@@ -1,0 +1,103 @@
+name: vechain-explorer
+ 
+services:
+  db:
+    image: mysql:5.6
+    platform: linux/amd64
+    restart: always
+    command: --innodb-file-format=Barracuda
+    environment:
+      MYSQL_DATABASE: 'chain'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'rootpassword'
+    expose:
+      - '3306'
+    ports:
+      - '3307:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 55
+  indexer-init-db:
+    image: vechain/chain-scanner:latest
+    entrypoint: /bin/sh -c
+    command: >
+      'if [ ! -f /initialized ]; then
+          echo "Initializing..."
+          npm run db-migrate
+          touch /initialized
+          exit 0
+      else
+          echo "Already initialized"
+          exit 0
+      fi'
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - TYPEORM_CONNECTION=${TYPEORM_CONNECTION}
+      - TYPEORM_HOST=${TYPEORM_HOST}
+      - TYPEORM_PORT=${TYPEORM_PORT}
+      - TYPEORM_USERNAME=${TYPEORM_USERNAME}
+      - TYPEORM_PASSWORD=${TYPEORM_PASSWORD}
+      - TYPEORM_DATABASE=${TYPEORM_DATABASE}
+      - TYPEORM_ENTITIES=${TYPEORM_ENTITIES}
+      - TYPEORM_MIGRATIONS=${TYPEORM_MIGRATIONS}
+  indexer-foundation:
+    image: vechain/chain-scanner:latest
+    command: main foundation
+    depends_on:
+      db:
+        condition: service_healthy
+      indexer-init-db:
+        condition: service_completed_successfully
+    environment:
+      - TYPEORM_CONNECTION=${TYPEORM_CONNECTION}
+      - TYPEORM_HOST=${TYPEORM_HOST}
+      - TYPEORM_PORT=${TYPEORM_PORT}
+      - TYPEORM_USERNAME=${TYPEORM_USERNAME}
+      - TYPEORM_PASSWORD=${TYPEORM_PASSWORD}
+      - TYPEORM_DATABASE=${TYPEORM_DATABASE}
+      - TYPEORM_ENTITIES=${TYPEORM_ENTITIES}
+      - THOR_REST=${THOR_REST}
+  api:
+     image: vechain/mass:latest
+     depends_on:
+       db:
+        condition: service_healthy
+       indexer-init-db:
+         condition: service_completed_successfully
+     environment:
+       - TYPEORM_CONNECTION=${TYPEORM_CONNECTION}
+       - TYPEORM_HOST=${TYPEORM_HOST}
+       - TYPEORM_PORT=${TYPEORM_PORT}
+       - TYPEORM_USERNAME=${TYPEORM_USERNAME}
+       - TYPEORM_PASSWORD=${TYPEORM_PASSWORD}
+       - TYPEORM_DATABASE=${TYPEORM_DATABASE}
+       - TYPEORM_ENTITIES=${TYPEORM_ENTITIES}
+       - THOR_REST=${THOR_REST}
+       - NETWORK=${NETWORK}
+       - NODE_ENV=${NODE_ENV}
+     expose:
+       - '3000'
+  frontend:
+     image: vechain/explorer:latest
+     environment:
+       - API_URL=${API_URL}
+       - NETWORK=${NETWORK}
+       - CAPTCHA_SECRET=${CAPTCHA_SECRET}
+     ports:
+       - '3000:3000'
+     depends_on:
+       db:
+        condition: service_healthy
+       indexer-init-db:
+         condition: service_completed_successfully
+      
+volumes:
+  mysql-data:
