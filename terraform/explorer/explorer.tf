@@ -8,7 +8,7 @@ variable "app_name" {
 
 resource "aws_service_discovery_private_dns_namespace" "ns" {
   name = "${local.env.environment}.${var.project}"
-  vpc  = data.terraform_remote_state.vpc.outputs.vpc_id
+  vpc  = local.env.vpc_id
 }
 
 ######################
@@ -16,7 +16,6 @@ resource "aws_service_discovery_private_dns_namespace" "ns" {
 ######################
 
 resource "aws_security_group" "alb-sg" {
-  count       = startswith(local.env.environment, "prod-") ? 1 : 0
   description = "security-group-alb"
   name        = "${local.env.environment}-${var.project}-sg-alb"
   egress {
@@ -51,7 +50,7 @@ resource "aws_security_group" "alb-sg" {
     Environment = local.env.environment
     Name        = "${local.env.environment}-${var.project}-sg-alb"
   }
-  vpc_id = data.terraform_remote_state.vpc.outputs.vpc_id
+  vpc_id = local.env.vpc_id
 }
 
 ######################
@@ -59,7 +58,6 @@ resource "aws_security_group" "alb-sg" {
 ######################
 
 resource "aws_security_group" "ecs_service_sg" {
-  count       = startswith(local.env.environment, "prod-") ? 1 : 0
   description = "security-group-service"
 
   name = "${local.env.environment}-${var.project}-${var.app_name}-sg-service"
@@ -80,7 +78,7 @@ resource "aws_security_group" "ecs_service_sg" {
     Name        = "${local.env.environment}-${var.project}-${var.app_name}-sg-service"
   }
 
-  vpc_id = data.terraform_remote_state.vpc.outputs.vpc_id
+  vpc_id = local.env.vpc_id
 }
 
 ################################################################################
@@ -89,12 +87,11 @@ resource "aws_security_group" "ecs_service_sg" {
 
 module "ecs-cluster" {
   # temporary filter to avoid deployment of new ECS cluster from original prod workspace
-  count   = startswith(local.env.environment, "prod-") ? 1 : 0
-  source  = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs_cluster?ref=v.1.0.2"
+  source  = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs_cluster?ref=v.1.0.4"
   env     = local.env.environment
   project = var.project
-  vpc_id  = data.terraform_remote_state.vpc.outputs.vpc_id
-  cidr    = data.terraform_remote_state.vpc.outputs.vpc_ipv4
+  vpc_id  = local.env.vpc_id
+  cidr    = local.env.cidr
 }
 
 ################################################################################
@@ -103,18 +100,18 @@ module "ecs-cluster" {
 
 module "ecs-lb-service-mass" {
   depends_on                = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
-  source                    = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.2"
+  for_each                  = local.env.networks 
+  source                    = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.4"
   region                    = local.env.region
-  vpc_id                    = data.terraform_remote_state.vpc.outputs.vpc_id
-  cluster_name              = module.ecs-cluster[0].name
-  autoscale_cluster_name    = module.ecs-cluster[0].name
-  lb_subnets                = data.terraform_remote_state.vpc.outputs.public_subnets
-  app_subnets               = data.terraform_remote_state.vpc.outputs.private_subnets
+  vpc_id                    = local.env.vpc_id
+  cluster_name              = module.ecs-cluster.name
+  autoscale_cluster_name    = module.ecs-cluster.name
+  lb_subnets                = local.env.public_subnets
+  app_subnets               = local.env.private_subnets
   env                       = local.env.environment
-  is_create_repo            = false
+  is_create_repo            = true
   secrets_enable            = false
   assign_public_ip          = false
-  image_repo_url            = each.value.mass.ecr_common_repo
   app_name                  = "${each.key}-mass"
   image_name                = local.env.image_tag
   project                   = var.project
@@ -123,9 +120,9 @@ module "ecs-lb-service-mass" {
   cidr                      = local.env.cidr
   container_port            = 8080
   certificate_arn           = local.env.certificate_arn
-  ecs_sg                    = [aws_security_group.alb-sg[0].id]
+  ecs_sg                    = [aws_security_group.alb-sg.id]
   rule_0_path_pattern       = ["/api/v*", "/api-docs", "/swagger-ui/*"]
-  alb_sg                    = [aws_security_group.alb-sg[0].id]
+  alb_sg                    = [aws_security_group.alb-sg.id]
   namespace_id              = aws_service_discovery_private_dns_namespace.ns.id
   https_tg_healthcheck_path = "/actuator/health"
   environment_variables = [
@@ -179,22 +176,22 @@ module "ecs-lb-service-mass" {
 ################################################################################
 module "ecs-backend-service-chain-scanner" {
   depends_on       = [module.ecs-cluster]
-  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.2"
-  vpc_id           = data.terraform_remote_state.vpc.outputs.vpc_id
+  for_each         = local.env.networks
+  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.4"
+  vpc_id           = local.env.vpc_id
   region           = local.env.region
-  cluster          = module.ecs-cluster[0].name
-  subnets          = concat(data.terraform_remote_state.vpc.outputs.public_subnets, data.terraform_remote_state.vpc.outputs.private_subnets)
+  cluster          = module.ecs-cluster.name
+  subnets          = concat(local.env.public_subnets, local.env.private_subnets)
   env              = local.env.environment
-  is_create_repo   = false
+  is_create_repo   = true
   secrets_enable   = false
-  image_repo_url   = each.value.chain-scanner.ecr_common_repo
   image_name       = local.env.image_tag
   app_name         = "${each.key}-chain-scanner"
   project          = var.project
   cpu              = each.value.chain-scanner.cpu
   memory           = each.value.chain-scanner.memory
   cidr             = local.env.cidr
-  security_groups  = [aws_security_group.ecs_service_sg[0].id]
+  security_groups  = [aws_security_group.ecs_service_sg.id]
   desired_capacity = "1"
   containerPort    = 8080
   hostPort         = 8080
@@ -290,22 +287,22 @@ module "ecs-backend-service-chain-scanner" {
 ################################################################################
 module "ecs-backend-service-explorer" {
   depends_on       = [module.ecs-cluster]
-  source           = "git::github.com/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.2"
-  vpc_id           = data.terraform_remote_state.vpc.outputs.vpc_id
+  for_each         = local.env.networks
+  source           = "git::github.com/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.4"
+  vpc_id           = local.env.vpc_id
   region           = local.env.region
-  cluster          = module.ecs-cluster[0].name
-  subnets          = concat(data.terraform_remote_state.vpc.outputs.public_subnets, data.terraform_remote_state.vpc.outputs.private_subnets)
+  cluster          = module.ecs-cluster.name
+  subnets          = concat(local.env.public_subnets, local.env.private_subnets)
   env              = local.env.environment
-  is_create_repo   = false
+  is_create_repo   = true
   secrets_enable   = false
-  image_repo_url   = each.value.explorer.ecr_common_repo
   image_name       = local.env.image_tag
   app_name         = "${each.key}-explorer"
   project          = var.project
   cpu              = each.value.explorer.cpu
   memory           = each.value.explorer.memory
   cidr             = local.env.cidr
-  security_groups  = [aws_security_group.ecs_service_sg[0].id]
+  security_groups  = [aws_security_group.ecs_service_sg.id]
   desired_capacity = "1"
   containerPort    = 8080
   hostPort         = 8080
@@ -348,75 +345,11 @@ module "ecs-backend-service-explorer" {
 data "aws_security_groups" "ecs_sg_list" {
   filter {
     name   = "vpc-id"
-    values = [data.terraform_remote_state.vpc.outputs.vpc_id]
+    values = [local.env.vpc_id]
   }
   filter {
     name   = "group-name"
     values = ["${local.env.environment}-${var.project}-*-sg-service", "${local.env.environment}-${var.project}-*-sg-alb"]
   }
-  depends_on = [module.ecs-service, module.ecs-lb-service]
+  depends_on = [module.ecs-backend-service-chain-scanner, module.ecs-lb-service-mass, module.ecs-backend-service-explorer]
 }
-
-module "vpc-endpoints" {
-  source = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//vpcendpoint?ref=v.1.0.2"
-  vpcendpoints_interfaces = (startswith(local.env.environment, "prod-") ? [] : [
-    {
-      id                  = "ec2"
-      vpc_id              = data.terraform_remote_state.vpc.outputs.vpc_id
-      security_group_ids  = data.aws_security_groups.ecs_sg_list.ids
-      subnet_ids          = data.terraform_remote_state.vpc.outputs.private_subnets
-      private_dns_enabled = true
-      allowed_cidr_blocks = [local.env.cidr]
-      inbound_ports       = [80, 443]
-      tags = {
-        Name        = "com.amazonaws.eu-west-1.ec2"
-        Project     = var.project
-        Environment = local.env.environment
-      }
-    },
-    {
-      id                  = "ec2messages"
-      vpc_id              = data.terraform_remote_state.vpc.outputs.vpc_id
-      security_group_ids  = data.aws_security_groups.ecs_sg_list.ids
-      subnet_ids          = data.terraform_remote_state.vpc.outputs.private_subnets
-      private_dns_enabled = true
-      allowed_cidr_blocks = [local.env.cidr]
-      inbound_ports       = [80, 443]
-      tags = {
-        Name        = "com.amazonaws.eu-west-1.ec2"
-        Project     = var.project
-        Environment = local.env.environment
-      }
-    },
-    {
-      id                  = "ssm"
-      vpc_id              = data.terraform_remote_state.vpc.outputs.vpc_id
-      security_group_ids  = data.aws_security_groups.ecs_sg_list.ids
-      subnet_ids          = data.terraform_remote_state.vpc.outputs.private_subnets
-      private_dns_enabled = true
-      allowed_cidr_blocks = [local.env.cidr]
-      inbound_ports       = [80, 443]
-      tags = {
-        Name        = "com.amazonaws.eu-west-1.ec2"
-        Project     = var.project
-        Environment = local.env.environment
-      }
-    },
-    {
-      id                  = "ssmmessages"
-      vpc_id              = data.terraform_remote_state.vpc.outputs.vpc_id
-      security_group_ids  = data.aws_security_groups.ecs_sg_list.ids
-      subnet_ids          = data.terraform_remote_state.vpc.outputs.private_subnets
-      private_dns_enabled = true
-      allowed_cidr_blocks = [local.env.cidr]
-      inbound_ports       = [80, 443]
-      tags = {
-        Name        = "com.amazonaws.eu-west-1.ec2"
-        Project     = var.project
-        Environment = local.env.environment
-      }
-    }
-  ])
-}
-
-

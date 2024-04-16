@@ -1,6 +1,6 @@
 output "cluster_name" {
   description = "The name of the ECS cluster"
-  value       = length(module.ecs-cluster) > 0 ? module.ecs-cluster[0].name : ""
+  value       = length(module.ecs-cluster) > 0 ? module.ecs-cluster.name : ""
 }
 
 output "mass_ecs_service_names" {
@@ -15,12 +15,12 @@ output "chain-scanner_ecs_service_names" {
 
 output "explorer_ecs_service_names" {
   description = "The names of the frontend ECS services"
-  value       = length(module.ecs-frontend-service-explorer) > 0 ? [for service in module.ecs-frontend-service-explorer : service.service_name] : []
+  value       = length(module.ecs-backend-service-explorer) > 0 ? [for service in module.ecs-backend-service-explorer : service.service_name] : []
 }
 
 output "load_balancer_domain_mainnet" {
   description = "The domain name of the mainnet load balancer"
-  value       = length(modul.ecs_lb-service-mass) > 0 ? module.ecs-lb-service-mass["main"].alb_dns_name : ""
+  value       = length(module.ecs-lb-service-mass) > 0 ? module.ecs-lb-service-mass["main"].alb_dns_name : ""
 }
 
 output "load_balancer_domain_testnet" {
