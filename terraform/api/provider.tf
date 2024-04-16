@@ -10,7 +10,7 @@ terraform {
     # The states of DEV and PROD environments are stored in separate S3 buckets in their
     # respective AWS accounts. The {{{ENV}}} placeholder is replaced manually (dev/prod)
     bucket               = "explorer-terraform-state-{{{ENV}}}"
-    key                  = "explorer-api.tfstate"
+    key                  = "explorer-mass.tfstate"
     region               = "eu-west-1"
     workspace_key_prefix = "workspaces"
   }
