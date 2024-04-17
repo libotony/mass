@@ -1,6 +1,7 @@
 image_tag:                       dev-latest
 region:                          eu-west-1
-application:                     explorer
+application:                     explore
+project:                         mass
 root_domain:                     vechain.org
 environment:                     dev
 certificate_arn:                 
@@ -61,18 +62,18 @@ networks:
         nfts:                       5000
         transactions:               5000
         transfers:                  5000
-    explorer:
+    explore:
       cpu:                          1024
       memory:                       2048
       spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
-      ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/explorer"
+      ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/explore"
     mysql:
       db_port: 3306
       allocated_storage: 2000
       engine: mysql
       engine_version: 8.0.36
       instance_class: db.t3.medium
-      app_name: explorer
+      app_name: explore
       deletion_protection: false
       multi_az: false
       storage_encrypted: false
@@ -80,6 +81,8 @@ networks:
       skip_final_snapshot: true
       publicly_accessible: false
       backup_retention_period: 7
+      username: admin
+      manage_master_user_password: true
 
 
   #uncomment following top level label if testnet not required
@@ -114,18 +117,18 @@ networks:
         nfts:                       5000
         transactions:               5000
         transfers:                  5000
-    explorer:
+    explore:
       cpu:                          1024
       memory:                       2048
       spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
-      ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/explorer"
+      ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/explore"
     mysql:
       db_port: 3306
       allocated_storage: 2000
       engine: mysql
       engine_version: 8.0.36
       instance_class: db.t3.medium
-      app_name: explorer
+      app_name: explore
       deletion_protection: false
       multi_az: false
       storage_encrypted: false
@@ -133,3 +136,5 @@ networks:
       skip_final_snapshot: true
       publicly_accessible: false
       backup_retention_period: 7
+      username: admin
+      manage_master_user_password: true

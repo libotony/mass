@@ -27,7 +27,7 @@ data "aws_subnets" "ct_database_subnets" {
 }
 
 variable "project" {
-  default = "explorer"
+  default = "explore"
 }
 
 variable "app_name" {

@@ -1,5 +1,5 @@
 variable "project" {
-  default = "explorer"
+  default = "explore"
 }
 
 variable "app_name" {
@@ -82,6 +82,22 @@ resource "aws_security_group" "ecs_service_sg" {
 }
 
 ################################################################################
+# Domain & Certificate creation
+################################################################################
+data "aws_lb_hosted_zone_id" "current" {}
+locals {
+  domains = [
+    { name : "*.${local.env.environment}.${local.env.application}.${local.env.root_domain}", zone : data.terraform_remote_state.vpc.outputs.explore_public_zone_id },
+  ]
+}
+
+module "domain" {
+  source      = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//domains?ref=variable-output-of-dns-name"
+  domain_name = local.domains[0].name
+  zone_id     = local.domains[0].zone
+}
+
+################################################################################
 # Module For ECS Cluster creation
 ################################################################################
 
@@ -100,8 +116,8 @@ module "ecs-cluster" {
 
 module "ecs-lb-service-mass" {
   depends_on                = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
-  for_each                  = local.env.networks 
-  source                    = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.4"
+  for_each                  = local.env.networks
+  source                    = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.5"
   region                    = local.env.region
   vpc_id                    = local.env.vpc_id
   cluster_name              = module.ecs-cluster.name
@@ -119,10 +135,11 @@ module "ecs-lb-service-mass" {
   memory                    = each.value.mass.memory
   cidr                      = local.env.cidr
   container_port            = 8080
-  certificate_arn           = local.env.certificate_arn
+  certificate_arn           = module.domain.certificate_arn
   ecs_sg                    = [aws_security_group.alb-sg.id]
   rule_0_path_pattern       = ["/api/v*", "/api-docs", "/swagger-ui/*"]
   alb_sg                    = [aws_security_group.alb-sg.id]
+  enable_deletion_protection = startswith(local.env.environment, "prod") ? true : false
   namespace_id              = aws_service_discovery_private_dns_namespace.ns.id
   https_tg_healthcheck_path = "/actuator/health"
   environment_variables = [
@@ -283,9 +300,9 @@ module "ecs-backend-service-chain-scanner" {
 }
 
 ################################################################################
-# Module For ECS Non-Load Balanced Service explorer
+# Module For ECS Non-Load Balanced Service explore
 ################################################################################
-module "ecs-backend-service-explorer" {
+module "ecs-backend-service-explore" {
   depends_on       = [module.ecs-cluster]
   for_each         = local.env.networks
   source           = "git::github.com/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.4"
@@ -297,10 +314,10 @@ module "ecs-backend-service-explorer" {
   is_create_repo   = true
   secrets_enable   = false
   image_name       = local.env.image_tag
-  app_name         = "${each.key}-explorer"
+  app_name         = "${each.key}-explore"
   project          = var.project
-  cpu              = each.value.explorer.cpu
-  memory           = each.value.explorer.memory
+  cpu              = each.value.explore.cpu
+  memory           = each.value.explore.memory
   cidr             = local.env.cidr
   security_groups  = [aws_security_group.ecs_service_sg.id]
   desired_capacity = "1"
@@ -317,7 +334,7 @@ module "ecs-backend-service-explorer" {
   environment_variables = [
     {
       name  = "APPLICATION_NAME"
-      value = "explorer"
+      value = "explore"
     },
     {
       name  = "ENVIRONMENT_NAME"
@@ -325,7 +342,7 @@ module "ecs-backend-service-explorer" {
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"
-      value = each.value.explorer.spring_profile
+      value = each.value.explore.spring_profile
     },
     { name  = "THOR_URL"
       value = each.value.thor_url
@@ -351,5 +368,5 @@ data "aws_security_groups" "ecs_sg_list" {
     name   = "group-name"
     values = ["${local.env.environment}-${var.project}-*-sg-service", "${local.env.environment}-${var.project}-*-sg-alb"]
   }
-  depends_on = [module.ecs-backend-service-chain-scanner, module.ecs-lb-service-mass, module.ecs-backend-service-explorer]
+  depends_on = [module.ecs-backend-service-chain-scanner, module.ecs-lb-service-mass, module.ecs-backend-service-explore]
 }

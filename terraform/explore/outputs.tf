@@ -13,9 +13,9 @@ output "chain-scanner_ecs_service_names" {
   value       = length(module.ecs-backend-service-chain-scanner) > 0 ? [for service in module.ecs-backend-service-chain-scanner : service.service_name] : []
 }
 
-output "explorer_ecs_service_names" {
+output "explore_ecs_service_names" {
   description = "The names of the frontend ECS services"
-  value       = length(module.ecs-backend-service-explorer) > 0 ? [for service in module.ecs-backend-service-explorer : service.service_name] : []
+  value       = length(module.ecs-backend-service-explore) > 0 ? [for service in module.ecs-backend-service-explore : service.service_name] : []
 }
 
 output "load_balancer_domain_mainnet" {

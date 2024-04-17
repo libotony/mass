@@ -8,39 +8,39 @@ terraform {
   backend "s3" {
     # The states of DEV and PROD environments are stored in separate S3 buckets in their
     # respective AWS accounts. The {{{ENV}}} placeholder is replaced manually (dev/prod)
-    bucket               = "explorer-terraform-state-dev"
-    key                  = "explorer-vpc.tfstate"
+    bucket               = "explore-terraform-state-dev"
+    key                  = "explore-vpc.tfstate"
     region               = "eu-west-1"
     workspace_key_prefix = "workspaces"
   }
 }
 
-# Import outputs from the explorer stack
-# data "terraform_remote_state" "explorer-blue" {
+# Import outputs from the explore stack
+# data "terraform_remote_state" "explore-blue" {
 #   backend = "s3"
 #   config = {
-#     bucket = "explorer-terraform-state-prod"
-#     key    = "workspaces/prod-blue/explorer.tfstate"
+#     bucket = "explore-terraform-state-prod"
+#     key    = "workspaces/prod-blue/explore.tfstate"
 #     region = "eu-west-1"
 #   }
 # }
 
-# # Import outputs from the explorer stack
-# data "terraform_remote_state" "explorer-green" {
+# # Import outputs from the explore stack
+# data "terraform_remote_state" "explore-green" {
 #   backend = "s3"
 #   config = {
-#     bucket = "explorer-terraform-state-prod"
-#     key    = "workspaces/prod-green/explorer.tfstate"
+#     bucket = "explore-terraform-state-prod"
+#     key    = "workspaces/prod-green/explore.tfstate"
 #     region = "eu-west-1"
 #   }
 # }
 
-# Import outputs from the explorer stack
-data "terraform_remote_state" "explorer-dev" {
+# Import outputs from the explore stack
+data "terraform_remote_state" "explore-dev" {
   backend = "s3"
   config = {
-    bucket = "explorer-terraform-state-dev"
-    key    = "workspaces/dev/explorer.tfstate"
+    bucket = "explore-terraform-state-dev"
+    key    = "workspaces/dev/explore.tfstate"
     region = "eu-west-1"
   }
 }

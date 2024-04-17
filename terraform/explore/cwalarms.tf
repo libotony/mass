@@ -116,7 +116,7 @@ locals {
       }
     }
   }
-    ecs_backend_highcpu_alarm_explorer = {
+    ecs_backend_highcpu_alarm_explore = {
     for k, v in module.ecs-backend-service-chain-scanner : "${v.service_name}_hicpu" => {
       alarm_name          = "${v.service_name}_highcpu_alarm"
       comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -151,7 +151,7 @@ locals {
     }
   }
 
-  ecs_highcpu_alarms = merge(local.ecs_backend_highcpu_alarm_explorer, local.ecs_backend_highcpu_alarm_cs, local.ecs_lb_highcpu_alarm)
+  ecs_highcpu_alarms = merge(local.ecs_backend_highcpu_alarm_explore, local.ecs_backend_highcpu_alarm_cs, local.ecs_lb_highcpu_alarm)
 
   ecs_backend_highmem_alarm = { 
     for k, v in module.ecs-backend-service-chain-scanner : "${v.service_name}_himem" => {
