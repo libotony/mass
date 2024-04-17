@@ -117,7 +117,7 @@ module "ecs-cluster" {
 module "ecs-lb-service-mass" {
   depends_on                = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
   for_each                  = local.env.networks
-  source                    = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.5"
+  source                    = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.6"
   region                    = local.env.region
   vpc_id                    = local.env.vpc_id
   cluster_name              = module.ecs-cluster.name
@@ -125,7 +125,8 @@ module "ecs-lb-service-mass" {
   lb_subnets                = local.env.public_subnets
   app_subnets               = local.env.private_subnets
   env                       = local.env.environment
-  is_create_repo            = true
+  is_create_repo            = false
+  image_repo_url            = each.value.mass.ecr_common_repo
   secrets_enable            = false
   assign_public_ip          = false
   app_name                  = "${each.key}-mass"
@@ -165,7 +166,47 @@ module "ecs-lb-service-mass" {
     {
       name  = "APP_LOGGER"
       value = "CloudWatch"
-    }
+    },
+    {
+      name = "TYPEORM_CONNECTION"
+      value = "mysql"
+    },
+    {
+      name = "TYPEORM_HOST"
+      value = "db"
+    },
+    {
+      name = "TYPEORM_PORT"
+      value = "3306"
+    },
+    {
+      name = "TYPEORM_USERNAME"
+      value = "user"
+    },
+    {
+      name = "TYPEORM_PASSWORD"
+      value = "password"
+    },
+    {
+      name = "TYPEORM_DATABASE"
+      value = "chain"
+    },
+    {
+      name = "TYPEORM_ENTITIES"
+      value = "dist/explorer-db/entity/*.js"
+    },
+    {
+      name = "THOR_REST"
+      value = "https://mainnet.live.dev.node.vechain.org"
+    },
+    {
+      name = "NETWORK"
+      value = "mainnet"
+    },
+    {
+      name = "NODE_ENV"
+      value = "production"
+    },
   ]
   log_metric_filters = [
     {
@@ -200,7 +241,8 @@ module "ecs-backend-service-chain-scanner" {
   cluster          = module.ecs-cluster.name
   subnets          = concat(local.env.public_subnets, local.env.private_subnets)
   env              = local.env.environment
-  is_create_repo   = true
+  is_create_repo   = false
+  image_repo_url   = each.value.chain-scanner.ecr_common_repo
   secrets_enable   = false
   image_name       = local.env.image_tag
   app_name         = "${each.key}-chain-scanner"
@@ -295,7 +337,39 @@ module "ecs-backend-service-chain-scanner" {
     {
       name  = "CHAIN-SCANNER_SYNC_LOGGER_INTERVAL_TRANSFERS"
       value = each.value.chain-scanner.sync_logger_interval.transfers
-    }
+    },
+    {
+      name = "TYPEORM_CONNECTION"
+      value = "mysql"
+    },
+    {
+      name = "TYPEORM_HOST"
+      value = "db"
+    },
+    {
+      name = "TYPEORM_PORT"
+      value = "3306"
+    },
+    {
+      name = "TYPEORM_USERNAME"
+      value = "user"
+    },
+    {
+      name = "TYPEORM_PASSWORD"
+      value = "password"
+    },
+    {
+      name = "TYPEORM_DATABASE"
+      value = "chain"
+    },
+    {
+      name = "TYPEORM_ENTITIES"
+      value = "dist/explorer-db/entity/*.js"
+    },
+    {
+      name = "THOR_REST"
+      value = "https://mainnet.live.dev.node.vechain.org"
+    },
   ]
 }
 
@@ -311,7 +385,8 @@ module "ecs-backend-service-explore" {
   cluster          = module.ecs-cluster.name
   subnets          = concat(local.env.public_subnets, local.env.private_subnets)
   env              = local.env.environment
-  is_create_repo   = true
+  is_create_repo   = false
+  image_repo_url   = each.value.explore.ecr_common_repo
   secrets_enable   = false
   image_name       = local.env.image_tag
   app_name         = "${each.key}-explore"
@@ -354,7 +429,19 @@ module "ecs-backend-service-explore" {
     {
       name  = "APP_LOGGER"
       value = "CloudWatch"
-    }
+    },
+    {
+      name = "API_URL"
+      value = "http://api:3000"
+    },  
+    {
+      name = "NETWORK"
+      value = "${each.key}net"
+    },  
+    {
+      name = "CAPTCHA_SECRET"
+      value = "CAPTCHA_SECRET"
+    },  
   ]
 }
 

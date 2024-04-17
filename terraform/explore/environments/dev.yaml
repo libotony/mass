@@ -1,7 +1,7 @@
 image_tag:                       dev-latest
 region:                          eu-west-1
 application:                     explore
-project:                         mass
+project:                         vechain
 root_domain:                     vechain.org
 environment:                     dev
 certificate_arn:                 

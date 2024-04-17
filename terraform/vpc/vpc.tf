@@ -38,8 +38,8 @@ variable "app_name" {
 module "vpclogs_cloudwatch" {
   source                                          = "git::git@github.com:/vechainfoundation/terraform_infrastructure_modules.git//logs?ref=v.1.0.2"
   environment                                     = local.env.environment
-  create_flow_log_cloudwatch_log_group            = "true"
-  create_flow_log_cloudwatch_iam_role             = "true"
+  create_flow_log_cloudwatch_log_group            = false
+  create_flow_log_cloudwatch_iam_role             = false
   flow_log_log_format                             = null
   flow_log_traffic_type                           = "ALL"
   vpc_id                                          = data.aws_vpc.ct_vpc_id.id
@@ -51,7 +51,7 @@ module "vpclogs_cloudwatch" {
   flow_log_cloudwatch_log_group_retention_in_days = 30
   flow_log_cloudwatch_log_group_kms_key_id        = null
   vpc_flow_log_permissions_boundary               = null
-  enable_flow_log_cloudwatch                      = "true"
+  enable_flow_log_cloudwatch                      = false
 }
 
 module "vpclogs_s3" {
