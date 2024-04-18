@@ -92,7 +92,7 @@ locals {
 }
 
 module "domain" {
-  source      = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//domains?ref=variable-output-of-dns-name"
+  source      = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//domains?ref=v.1.0.7"
   domain_name = local.domains[0].name
   zone_id     = local.domains[0].zone
 }
@@ -173,7 +173,7 @@ module "ecs-lb-service-mass" {
     },
     {
       name = "TYPEORM_HOST"
-      value = "db"
+      value = module.rds[each.key].db_address
     },
     {
       name = "TYPEORM_PORT"
@@ -344,7 +344,7 @@ module "ecs-backend-service-chain-scanner" {
     },
     {
       name = "TYPEORM_HOST"
-      value = "db"
+      value = module.rds[each.key].db_address
     },
     {
       name = "TYPEORM_PORT"
@@ -368,7 +368,7 @@ module "ecs-backend-service-chain-scanner" {
     },
     {
       name = "THOR_REST"
-      value = "https://mainnet.live.dev.node.vechain.org"
+      value = "https://${each.key}net.live.dev.node.vechain.org"
     },
   ]
 }
