@@ -160,7 +160,8 @@ module "ecs-lb-service-mass" {
       name  = "APP_LOG_LEVEL"
       value = "INFO"
     },
-    { name  = "THOR_URL"
+    { 
+      name  = "THOR_URL"
       value = each.value.thor_url
     },
     {
@@ -177,19 +178,19 @@ module "ecs-lb-service-mass" {
     },
     {
       name = "TYPEORM_PORT"
-      value = "3306"
+      value = module.rds[each.key].db_port
     },
     {
       name = "TYPEORM_USERNAME"
-      value = "user"
+      value = module.rds[each.key].db_username
     },
     {
       name = "TYPEORM_PASSWORD"
-      value = "password"
+      value = module.rds[each.key].rds_master_password_ssm_value
     },
     {
       name = "TYPEORM_DATABASE"
-      value = "chain"
+      value = each.value.mysql.db_name
     },
     {
       name = "TYPEORM_ENTITIES"
@@ -201,7 +202,7 @@ module "ecs-lb-service-mass" {
     },
     {
       name = "NETWORK"
-      value = "mainnet"
+      value = "${each.key}net"
     },
     {
       name = "NODE_ENV"
@@ -235,7 +236,7 @@ module "ecs-lb-service-mass" {
 module "ecs-backend-service-chain-scanner" {
   depends_on       = [module.ecs-cluster]
   for_each         = local.env.networks
-  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.4"
+  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.9"
   vpc_id           = local.env.vpc_id
   region           = local.env.region
   cluster          = module.ecs-cluster.name
@@ -245,6 +246,7 @@ module "ecs-backend-service-chain-scanner" {
   image_repo_url   = each.value.chain-scanner.ecr_common_repo
   secrets_enable   = false
   image_name       = local.env.image_tag
+  commands         = concat(each.value.chain-scanner.commands)
   app_name         = "${each.key}-chain-scanner"
   project          = var.project
   cpu              = each.value.chain-scanner.cpu
@@ -348,19 +350,19 @@ module "ecs-backend-service-chain-scanner" {
     },
     {
       name = "TYPEORM_PORT"
-      value = "3306"
+      value = module.rds[each.key].db_port
     },
     {
       name = "TYPEORM_USERNAME"
-      value = "user"
+      value = module.rds[each.key].db_username
     },
     {
       name = "TYPEORM_PASSWORD"
-      value = "password"
+      value = module.rds[each.key].rds_master_password_ssm_value
     },
     {
       name = "TYPEORM_DATABASE"
-      value = "chain"
+      value = each.value.mysql.db_name
     },
     {
       name = "TYPEORM_ENTITIES"

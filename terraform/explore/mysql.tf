@@ -1,7 +1,8 @@
 module "rds" {
   for_each                    = local.env.networks
-  source                      = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//rds?ref=v.1.0.2"
+  source                      = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//rds?ref=v.1.0.9"
   app_name                    = "${local.env.application}${each.key}"
+  db_name                     = each.value.mysql.db_name
   env                         = local.env.environment
   project                     = local.env.project
   allocated_storage           = each.value.mysql.allocated_storage
