@@ -372,6 +372,10 @@ module "ecs-backend-service-chain-scanner" {
       name = "THOR_REST"
       value = "https://${each.key}net.live.dev.node.vechain.org"
     },
+    {
+      name = "TYPEORM_MIGRATIONS"
+      value = "dist/migrations/*.js"
+    }
   ]
 }
 
@@ -445,17 +449,4 @@ module "ecs-backend-service-explore" {
       value = "CAPTCHA_SECRET"
     },  
   ]
-}
-
-
-data "aws_security_groups" "ecs_sg_list" {
-  filter {
-    name   = "vpc-id"
-    values = [local.env.vpc_id]
-  }
-  filter {
-    name   = "group-name"
-    values = ["${local.env.environment}-${var.project}-*-sg-service", "${local.env.environment}-${var.project}-*-sg-alb"]
-  }
-  depends_on = [module.ecs-backend-service-chain-scanner, module.ecs-lb-service-mass, module.ecs-backend-service-explore]
 }
