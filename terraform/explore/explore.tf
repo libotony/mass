@@ -142,7 +142,7 @@ module "ecs-lb-service-mass" {
   alb_sg                    = [aws_security_group.alb-sg.id]
   enable_deletion_protection = startswith(local.env.environment, "prod") ? true : false
   namespace_id              = aws_service_discovery_private_dns_namespace.ns.id
-  https_tg_healthcheck_path = "/actuator/health"
+  https_tg_healthcheck_path = "/blocks/best"
   environment_variables = [
     {
       name  = "APPLICATION_NAME"
