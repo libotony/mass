@@ -115,34 +115,34 @@ module "ecs-cluster" {
 ################################################################################
 
 module "ecs-lb-service-mass" {
-  depends_on                = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
-  for_each                  = local.env.networks
-  source                    = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.6"
-  region                    = local.env.region
-  vpc_id                    = local.env.vpc_id
-  cluster_name              = module.ecs-cluster.name
-  autoscale_cluster_name    = module.ecs-cluster.name
-  lb_subnets                = local.env.public_subnets
-  app_subnets               = local.env.private_subnets
-  env                       = local.env.environment
-  is_create_repo            = false
-  image_repo_url            = each.value.mass.ecr_common_repo
-  secrets_enable            = false
-  assign_public_ip          = false
-  app_name                  = "${each.key}-mass"
-  image_name                = local.env.image_tag
-  project                   = var.project
-  cpu                       = each.value.mass.cpu
-  memory                    = each.value.mass.memory
-  cidr                      = local.env.cidr
-  container_port            = 8080
-  certificate_arn           = module.domain.certificate_arn
-  ecs_sg                    = [aws_security_group.alb-sg.id]
-  rule_0_path_pattern       = ["/api/v*", "/api-docs", "/swagger-ui/*"]
-  alb_sg                    = [aws_security_group.alb-sg.id]
+  depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
+  for_each                   = local.env.networks
+  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.13"
+  region                     = local.env.region
+  vpc_id                     = local.env.vpc_id
+  cluster_name               = module.ecs-cluster.name
+  autoscale_cluster_name     = module.ecs-cluster.name
+  lb_subnets                 = local.env.public_subnets
+  app_subnets                = local.env.private_subnets
+  env                        = local.env.environment
+  is_create_repo             = false
+  ecr_repo_uri               = each.value.mass.ecr_common_repo
+  secrets_enable             = false
+  assign_public_ip           = false
+  app_name                   = "${each.key}-mass"
+  ecr_image_tag              = local.env.image_tag
+  project                    = var.project
+  cpu                        = each.value.mass.cpu
+  memory                     = each.value.mass.memory
+  cidr                       = local.env.cidr
+  container_port             = 8080
+  certificate_arn            = module.domain.certificate_arn
+  ecs_sg                     = [aws_security_group.alb-sg.id]
+  rule_0_path_pattern        = ["/api/v*", "/api-docs", "/swagger-ui/*"]
+  alb_sg                     = [aws_security_group.alb-sg.id]
   enable_deletion_protection = startswith(local.env.environment, "prod") ? true : false
-  namespace_id              = aws_service_discovery_private_dns_namespace.ns.id
-  https_tg_healthcheck_path = "/blocks/best"
+  namespace_id               = aws_service_discovery_private_dns_namespace.ns.id
+  https_tg_healthcheck_path  = "/api/chain/head"
   environment_variables = [
     {
       name  = "APPLICATION_NAME"
@@ -160,7 +160,7 @@ module "ecs-lb-service-mass" {
       name  = "APP_LOG_LEVEL"
       value = "INFO"
     },
-    { 
+    {
       name  = "THOR_URL"
       value = each.value.thor_url
     },
@@ -169,43 +169,43 @@ module "ecs-lb-service-mass" {
       value = "CloudWatch"
     },
     {
-      name = "TYPEORM_CONNECTION"
+      name  = "TYPEORM_CONNECTION"
       value = "mysql"
     },
     {
-      name = "TYPEORM_HOST"
+      name  = "TYPEORM_HOST"
       value = module.rds[each.key].db_address
     },
     {
-      name = "TYPEORM_PORT"
+      name  = "TYPEORM_PORT"
       value = module.rds[each.key].db_port
     },
     {
-      name = "TYPEORM_USERNAME"
+      name  = "TYPEORM_USERNAME"
       value = module.rds[each.key].db_username
     },
     {
-      name = "TYPEORM_PASSWORD"
+      name  = "TYPEORM_PASSWORD"
       value = module.rds[each.key].rds_master_password_ssm_value
     },
     {
-      name = "TYPEORM_DATABASE"
+      name  = "TYPEORM_DATABASE"
       value = each.value.mysql.db_name
     },
     {
-      name = "TYPEORM_ENTITIES"
+      name  = "TYPEORM_ENTITIES"
       value = "dist/explorer-db/entity/*.js"
     },
     {
-      name = "THOR_REST"
+      name  = "THOR_REST"
       value = "https://mainnet.live.dev.node.vechain.org"
     },
     {
-      name = "NETWORK"
+      name  = "NETWORK"
       value = "${each.key}net"
     },
     {
-      name = "NODE_ENV"
+      name  = "NODE_ENV"
       value = "production"
     },
   ]
@@ -341,39 +341,39 @@ module "ecs-backend-service-chain-scanner" {
       value = each.value.chain-scanner.sync_logger_interval.transfers
     },
     {
-      name = "TYPEORM_CONNECTION"
+      name  = "TYPEORM_CONNECTION"
       value = "mysql"
     },
     {
-      name = "TYPEORM_HOST"
+      name  = "TYPEORM_HOST"
       value = module.rds[each.key].db_address
     },
     {
-      name = "TYPEORM_PORT"
+      name  = "TYPEORM_PORT"
       value = module.rds[each.key].db_port
     },
     {
-      name = "TYPEORM_USERNAME"
+      name  = "TYPEORM_USERNAME"
       value = module.rds[each.key].db_username
     },
     {
-      name = "TYPEORM_PASSWORD"
+      name  = "TYPEORM_PASSWORD"
       value = module.rds[each.key].rds_master_password_ssm_value
     },
     {
-      name = "TYPEORM_DATABASE"
+      name  = "TYPEORM_DATABASE"
       value = each.value.mysql.db_name
     },
     {
-      name = "TYPEORM_ENTITIES"
+      name  = "TYPEORM_ENTITIES"
       value = "dist/explorer-db/entity/*.js"
     },
     {
-      name = "THOR_REST"
+      name  = "THOR_REST"
       value = "https://${each.key}net.live.dev.node.vechain.org"
     },
     {
-      name = "TYPEORM_MIGRATIONS"
+      name  = "TYPEORM_MIGRATIONS"
       value = "dist/migrations/*.js"
     }
   ]
@@ -437,16 +437,16 @@ module "ecs-backend-service-explore" {
       value = "CloudWatch"
     },
     {
-      name = "API_URL"
-      value = "http://api:3000"
-    },  
+      name  = "API_URL"
+      value = "http://${module.ecs-lb-service-mass[each.key].alb_dns_name}:3000"
+    },
     {
-      name = "NETWORK"
+      name  = "NETWORK"
       value = "${each.key}net"
-    },  
+    },
     {
-      name = "CAPTCHA_SECRET"
+      name  = "CAPTCHA_SECRET"
       value = "CAPTCHA_SECRET"
-    },  
+    },
   ]
 }
