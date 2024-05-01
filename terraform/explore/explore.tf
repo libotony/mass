@@ -117,12 +117,13 @@ module "ecs-cluster" {
 module "ecs-lb-service-mass" {
   depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
   for_each                   = local.env.networks
-  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.13"
+  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=Support-internal-ALBs-from-load-balanced-ecs-service"
   region                     = local.env.region
   vpc_id                     = local.env.vpc_id
   cluster_name               = module.ecs-cluster.name
   autoscale_cluster_name     = module.ecs-cluster.name
-  lb_subnets                 = local.env.public_subnets
+  lb_subnets                 = local.env.private_subnets
+  internal_alb               = true
   app_subnets                = local.env.private_subnets
   env                        = local.env.environment
   is_create_repo             = false
@@ -236,16 +237,16 @@ module "ecs-lb-service-mass" {
 module "ecs-backend-service-chain-scanner" {
   depends_on       = [module.ecs-cluster]
   for_each         = local.env.networks
-  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.9"
+  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.14"
   vpc_id           = local.env.vpc_id
   region           = local.env.region
   cluster          = module.ecs-cluster.name
   subnets          = concat(local.env.public_subnets, local.env.private_subnets)
   env              = local.env.environment
   is_create_repo   = false
-  image_repo_url   = each.value.chain-scanner.ecr_common_repo
+  ecr_repo_uri     = each.value.chain-scanner.ecr_common_repo
   secrets_enable   = false
-  image_name       = local.env.image_tag
+  ecr_image_tag    = local.env.image_tag
   commands         = concat(each.value.chain-scanner.commands)
   app_name         = "${each.key}-chain-scanner"
   project          = var.project
@@ -444,7 +445,7 @@ module "ecs-lb-service-explore" {
     },
     {
       name  = "API_URL"
-      value = "http://${module.ecs-lb-service-mass[each.key].alb_dns_name}:3000"
+      value = "http://${module.ecs-lb-service-mass[each.key].alb_dns_name}:8080"
     },
     {
       name  = "NETWORK"

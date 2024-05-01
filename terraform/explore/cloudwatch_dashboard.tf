@@ -3,7 +3,7 @@ locals {
     "widgets" : [
       for k, v in merge(
         { for k, v in module.ecs-backend-service-chain-scanner : v.service_name => v.cluster_name },
-        { for k, v in module.ecs-backend-service-mass : v.service_name => v.cluster_name },
+        { for k, v in module.ecs-lb-service-mass : v.service_name => v.cluster_name },
         { for k, v in module.ecs-lb-service-explore : v.service_name => v.cluster_name }
         ) : {
         "type" : "metric",

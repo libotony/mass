@@ -17,7 +17,7 @@ locals {
   #   }
   # }
 
-  elb_response_alarms = { for k, v in module.ecs-lb-service-mass : "${v.service_name}_slo_req" => {
+  elb_response_alarms = { for k, v in module.ecs-lb-service-explore : "${v.service_name}_slo_req" => {
     alarm_name          = "${v.service_name}_response_alarm"
     comparison_operator = "GreaterThanOrEqualToThreshold"
     evaluation_periods  = 3
@@ -33,7 +33,7 @@ locals {
     }
   }
 
-  elb_5xx_count_alarms = { for k, v in module.ecs-lb-service-mass : "${v.service_name}_hi_5xx" => {
+  elb_5xx_count_alarms = { for k, v in module.ecs-lb-service-explore : "${v.service_name}_hi_5xx" => {
     alarm_name          = "${v.service_name}_5xx_count_alarm"
     comparison_operator = "GreaterThanOrEqualToThreshold"
     evaluation_periods  = 3
@@ -49,7 +49,7 @@ locals {
     }
   }
 
-  elb_connect_rate_alarms = { for k, v in module.ecs-lb-service-mass : "${v.service_name}_hi_conr" => {
+  elb_connect_rate_alarms = { for k, v in module.ecs-lb-service-explore : "${v.service_name}_hi_conr" => {
     alarm_name          = "${v.service_name}_connect_rate_alarm"
     comparison_operator = "GreaterThanOrEqualToThreshold"
     evaluation_periods  = 3
@@ -65,7 +65,7 @@ locals {
     }
   }
 
-  elb_low_health_alarm = { for k, v in module.ecs-lb-service-mass : "${v.service_name}_lo_h" => {
+  elb_low_health_alarm = { for k, v in module.ecs-lb-service-explore : "${v.service_name}_lo_h" => {
     alarm_name          = "${v.service_name}_low_health_alarm"
     comparison_operator = "LessThanThreshold"
     evaluation_periods  = 3
@@ -82,7 +82,7 @@ locals {
     }
   }
 
-  elb_hi_unhealthy_alarm = { for k, v in module.ecs-lb-service-mass : "${v.service_name}_hi_unh" => {
+  elb_hi_unhealthy_alarm = { for k, v in module.ecs-lb-service-explore : "${v.service_name}_hi_unh" => {
     alarm_name          = "${v.service_name}_hi_unhealthy_alarm"
     comparison_operator = "GreaterThanOrEqualToThreshold"
     evaluation_periods  = 3
@@ -134,7 +134,7 @@ locals {
     }
   }
   ecs_lb_highcpu_alarm = {
-    for k, v in module.ecs-lb-service-mass : "${v.service_name}_hicpu" => {
+    for k, v in module.ecs-lb-service-explore : "${v.service_name}_hicpu" => {
       alarm_name          = "${v.service_name}_highcpu_alarm"
       comparison_operator = "GreaterThanOrEqualToThreshold"
       evaluation_periods  = 3
@@ -171,7 +171,7 @@ locals {
    }
   }
   ecs_lb_highmem_alarm = { 
-    for k, v in module.ecs-lb-service-mass : "${v.service_name}_himem" => {
+    for k, v in module.ecs-lb-service-explore : "${v.service_name}_himem" => {
     alarm_name          = "${v.service_name}_highmem_alarm"
     comparison_operator = "GreaterThanOrEqualToThreshold"
     evaluation_periods  = 3
@@ -190,7 +190,7 @@ locals {
 
   ecs_highmem_alarms = merge(local.ecs_backend_highmem_alarm, local.ecs_lb_highmem_alarm)
 
-  log_metric_alarm = { for k in concat(flatten([for k, v in module.ecs-backend-service-chain-scanner : v.log_metric_names]), flatten([for k, v in module.ecs-lb-service-mass : v.log_metric_names])) : "${k}_lma" => {
+  log_metric_alarm = { for k in concat(flatten([for k, v in module.ecs-backend-service-chain-scanner : v.log_metric_names]), flatten([for k, v in module.ecs-lb-service-explore : v.log_metric_names])) : "${k}_lma" => {
     alarm_name          = "${k}_logmetric_alarm"
     comparison_operator = "GreaterThanOrEqualToThreshold"
     evaluation_periods  = 1
