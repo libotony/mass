@@ -382,29 +382,35 @@ module "ecs-backend-service-chain-scanner" {
 ################################################################################
 # Module For ECS Non-Load Balanced Service explore
 ################################################################################
-module "ecs-backend-service-explore" {
-  depends_on       = [module.ecs-cluster]
-  for_each         = local.env.networks
-  source           = "git::github.com/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.4"
-  vpc_id           = local.env.vpc_id
-  region           = local.env.region
-  cluster          = module.ecs-cluster.name
-  subnets          = concat(local.env.public_subnets, local.env.private_subnets)
-  env              = local.env.environment
-  is_create_repo   = false
-  image_repo_url   = each.value.explore.ecr_common_repo
-  secrets_enable   = false
-  image_name       = local.env.image_tag
-  app_name         = "${each.key}-explore"
-  project          = var.project
-  cpu              = each.value.explore.cpu
-  memory           = each.value.explore.memory
-  cidr             = local.env.cidr
-  security_groups  = [aws_security_group.ecs_service_sg.id]
-  desired_capacity = "1"
-  containerPort    = 8080
-  hostPort         = 8080
-  namespace_id     = aws_service_discovery_private_dns_namespace.ns.id
+module "ecs-lb-service-explore" {
+  depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
+  for_each                   = local.env.networks
+  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.13"
+  vpc_id                     = local.env.vpc_id
+  region                     = local.env.region
+  cluster_name               = module.ecs-cluster.name
+  autoscale_cluster_name     = module.ecs-cluster.name
+  lb_subnets                 = local.env.public_subnets
+  app_subnets                = local.env.private_subnets
+  env                        = local.env.environment
+  is_create_repo             = false
+  ecr_repo_uri               = each.value.explore.ecr_common_repo
+  secrets_enable             = false
+  assign_public_ip           = false
+  app_name                   = "${each.key}-explore"
+  ecr_image_tag              = local.env.image_tag
+  project                    = var.project
+  cpu                        = each.value.explore.cpu
+  memory                     = each.value.explore.memory
+  cidr                       = local.env.cidr
+  container_port             = 8080
+  certificate_arn            = module.domain.certificate_arn
+  ecs_sg                     = [aws_security_group.alb-sg.id]
+  rule_0_path_pattern        = ["/api/v*", "/api-docs", "/swagger-ui/*"]
+  alb_sg                     = [aws_security_group.alb-sg.id]
+  enable_deletion_protection = startswith(local.env.environment, "prod") ? true : false
+  namespace_id               = aws_service_discovery_private_dns_namespace.ns.id
+  https_tg_healthcheck_path  = "/api/blocks/best"
   log_metric_filters = [
     {
       name    = "AppUnhealthy",
