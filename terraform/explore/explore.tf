@@ -12,7 +12,7 @@ resource "aws_service_discovery_private_dns_namespace" "ns" {
 }
 
 ######################
-# ALB Security Group
+# Public ALB Security Group
 ######################
 
 resource "aws_security_group" "alb-sg" {
@@ -20,6 +20,14 @@ resource "aws_security_group" "alb-sg" {
   name        = "${local.env.environment}-${var.project}-sg-alb"
   egress {
     cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+  }
+
+  egress {
+    cidr_blocks = [local.env.cidr]
+    description = "VPC CIDR"
     from_port   = 0
     protocol    = "-1"
     to_port     = 0
@@ -54,28 +62,74 @@ resource "aws_security_group" "alb-sg" {
 }
 
 ######################
+# Internal ALB Security Group
+######################
+
+resource "aws_security_group" "internal-alb-sg" {
+  description = "security-group-internal-alb"
+  name        = "${local.env.environment}-${var.project}-sg-internal-alb"
+  egress {
+    security_groups = [aws_security_group.ecs_service_sg.id]
+    description     = "ECS Service Security Group"
+    from_port       = 0
+    protocol        = "-1"
+    to_port         = 0
+  }
+
+  ingress {
+    security_groups = [aws_security_group.alb-sg.id]
+    from_port       = 0
+    protocol        = "-1"
+    to_port         = 0
+  }
+
+  ingress {
+    cidr_blocks = [local.env.cidr]
+    description = "VPC CIDR"
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+  }
+
+  tags = {
+    Environment = local.env.environment
+    Name        = "${local.env.environment}-${var.project}-sg-internal-alb"
+  }
+  vpc_id = local.env.vpc_id
+}
+
+######################
 # ECS Service Security Group
 ######################
 
 resource "aws_security_group" "ecs_service_sg" {
   description = "security-group-service"
 
-  name = "${local.env.environment}-${var.project}-${var.app_name}-sg-service"
+  name = "${local.env.environment}-${var.project}-sg-service"
   egress {
     cidr_blocks = ["0.0.0.0/0"]
     from_port   = 0
     protocol    = "-1"
     to_port     = 0
   }
-  ingress {
-    from_port = 0
-    protocol  = "-1"
-    to_port   = 0
-    self      = true
+  egress {
+    cidr_blocks = [local.env.cidr]
+    description = "VPC CIDR"
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
   }
+
+  ingress {
+    cidr_blocks = [local.env.cidr]
+    description = "VPC CIDR"
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+  } 
   tags = {
     Environment = local.env.environment
-    Name        = "${local.env.environment}-${var.project}-${var.app_name}-sg-service"
+    Name        = "${local.env.environment}-${var.project}-sg-service"
   }
 
   vpc_id = local.env.vpc_id
@@ -138,9 +192,9 @@ module "ecs-lb-service-mass" {
   cidr                       = local.env.cidr
   container_port             = 8080
   certificate_arn            = module.domain.certificate_arn
-  ecs_sg                     = [aws_security_group.alb-sg.id]
+  ecs_sg                     = [aws_security_group.ecs_service_sg.id]
   rule_0_path_pattern        = ["/api/v*", "/api-docs", "/swagger-ui/*"]
-  alb_sg                     = [aws_security_group.alb-sg.id]
+  alb_sg                     = [aws_security_group.internal-alb-sg.id]
   enable_deletion_protection = startswith(local.env.environment, "prod") ? true : false
   namespace_id               = aws_service_discovery_private_dns_namespace.ns.id
   https_tg_healthcheck_path  = "/api/chain/head"
@@ -406,12 +460,12 @@ module "ecs-lb-service-explore" {
   cidr                       = local.env.cidr
   container_port             = 8080
   certificate_arn            = module.domain.certificate_arn
-  ecs_sg                     = [aws_security_group.alb-sg.id]
+  ecs_sg                     = [aws_security_group.ecs_service_sg.id]
   rule_0_path_pattern        = ["/api/v*", "/api-docs", "/swagger-ui/*"]
   alb_sg                     = [aws_security_group.alb-sg.id]
   enable_deletion_protection = startswith(local.env.environment, "prod") ? true : false
   namespace_id               = aws_service_discovery_private_dns_namespace.ns.id
-  https_tg_healthcheck_path  = "/accounts/0x0000000000000000000000000000000000000000"
+  https_tg_healthcheck_path  = "/_nuxt/manifest.2c5ca230.json"
   log_metric_filters = [
     {
       name    = "AppUnhealthy",
