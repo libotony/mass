@@ -85,16 +85,13 @@ resource "aws_security_group" "ecs_service_sg" {
 
   name = "${local.env.environment}-${var.project}-sg-service"
   egress {
-    cidr_blocks = [local.env.cidr]
-    description = "VPC CIDR"
+    cidr_blocks = ["0.0.0.0/0"]
     from_port   = 0
     protocol    = "-1"
     to_port     = 0
   }
-
   ingress {
-    cidr_blocks = [local.env.cidr]
-    description = "VPC CIDR"
+    cidr_blocks = ["0.0.0.0/0"]
     from_port   = 0
     protocol    = "-1"
     to_port     = 0
