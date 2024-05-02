@@ -96,6 +96,13 @@ resource "aws_security_group" "ecs_service_sg" {
     protocol    = "-1"
     to_port     = 0
   }
+  ingress {
+    from_port = 0
+    protocol  = "-1"
+    to_port   = 0
+    self      = true
+  }
+
   tags = {
     Environment = local.env.environment
     Name        = "${local.env.environment}-${var.project}-sg-service"
@@ -222,7 +229,7 @@ module "ecs-lb-service-mass" {
     },
     {
       name  = "THOR_REST"
-      value = "https://mainnet.live.dev.node.vechain.org"
+      value = "https://${each.key}net.live.dev.node.vechain.org"
     },
     {
       name  = "NETWORK"
