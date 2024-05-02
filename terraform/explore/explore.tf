@@ -411,7 +411,7 @@ module "ecs-lb-service-explore" {
   alb_sg                     = [aws_security_group.alb-sg.id]
   enable_deletion_protection = startswith(local.env.environment, "prod") ? true : false
   namespace_id               = aws_service_discovery_private_dns_namespace.ns.id
-  https_tg_healthcheck_path  = "/api/blocks/best"
+  https_tg_healthcheck_path  = "/accounts/0x0000000000000000000000000000000000000000"
   log_metric_filters = [
     {
       name    = "AppUnhealthy",
@@ -445,7 +445,7 @@ module "ecs-lb-service-explore" {
     },
     {
       name  = "API_URL"
-      value = "http://${module.ecs-lb-service-mass[each.key].alb_dns_name}:8080"
+      value = "http://${module.ecs-lb-service-mass[each.key].alb_dns_name}:80"
     },
     {
       name  = "NETWORK"
