@@ -25,14 +25,6 @@ resource "aws_security_group" "alb-sg" {
     to_port     = 0
   }
 
-  egress {
-    cidr_blocks = [local.env.cidr]
-    description = "VPC CIDR"
-    from_port   = 0
-    protocol    = "-1"
-    to_port     = 0
-  }
-
   ingress {
     cidr_blocks = ["0.0.0.0/0"]
     from_port   = 80
@@ -45,13 +37,6 @@ resource "aws_security_group" "alb-sg" {
     from_port   = 443
     protocol    = "tcp"
     to_port     = 443
-  }
-
-  ingress {
-    from_port = 0
-    protocol  = "-1"
-    to_port   = 0
-    self      = true
   }
 
   tags = {
@@ -77,18 +62,11 @@ resource "aws_security_group" "internal-alb-sg" {
   }
 
   ingress {
-    security_groups = [aws_security_group.alb-sg.id]
+    security_groups = [aws_security_group.ecs_service_sg.id]
+    description     = "ECS Service Security Group"
     from_port       = 0
     protocol        = "-1"
     to_port         = 0
-  }
-
-  ingress {
-    cidr_blocks = [local.env.cidr]
-    description = "VPC CIDR"
-    from_port   = 0
-    protocol    = "-1"
-    to_port     = 0
   }
 
   tags = {
@@ -107,12 +85,6 @@ resource "aws_security_group" "ecs_service_sg" {
 
   name = "${local.env.environment}-${var.project}-sg-service"
   egress {
-    cidr_blocks = ["0.0.0.0/0"]
-    from_port   = 0
-    protocol    = "-1"
-    to_port     = 0
-  }
-  egress {
     cidr_blocks = [local.env.cidr]
     description = "VPC CIDR"
     from_port   = 0
@@ -126,7 +98,7 @@ resource "aws_security_group" "ecs_service_sg" {
     from_port   = 0
     protocol    = "-1"
     to_port     = 0
-  } 
+  }
   tags = {
     Environment = local.env.environment
     Name        = "${local.env.environment}-${var.project}-sg-service"
@@ -171,7 +143,7 @@ module "ecs-cluster" {
 module "ecs-lb-service-mass" {
   depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
   for_each                   = local.env.networks
-  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.16"
+  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=LB-listener-updates-for-internal-lb-"
   region                     = local.env.region
   vpc_id                     = local.env.vpc_id
   cluster_name               = module.ecs-cluster.name
