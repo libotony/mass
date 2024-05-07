@@ -17,6 +17,7 @@ module "rds" {
   subnet_ids                  = local.env.database_subnets
   option_settings             = each.value.mysql.option_settings
   db_parameter                = [{}]
+  apply_immediately           = each.value.mysql.apply_immediately
   skip_final_snapshot         = each.value.mysql.skip_final_snapshot
   publicly_accessible         = each.value.mysql.publicly_accessible
   backup_retention_period     = each.value.mysql.backup_retention_period

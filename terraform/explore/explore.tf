@@ -441,7 +441,9 @@ module "ecs-lb-service-explore" {
   alb_sg                     = [aws_security_group.alb-sg.id]
   enable_deletion_protection = startswith(local.env.environment, "prod") ? true : false
   namespace_id               = aws_service_discovery_private_dns_namespace.ns.id
-  https_tg_healthcheck_path  = "/_nuxt/manifest.2c5ca230.json"
+  https_tg_healthcheck_path  = "/favicon.png"
+  https_tg_healthcheck_timeout = 30
+  https_tg_healthcheck_interval = 45
   log_metric_filters = [
     {
       name    = "AppUnhealthy",
@@ -455,7 +457,7 @@ module "ecs-lb-service-explore" {
       value = "explore"
     },
     {
-      name  = "ENVIRONMENT_NAME"
+      name  = "NODE_ENV"
       value = local.env.environment
     },
     {
