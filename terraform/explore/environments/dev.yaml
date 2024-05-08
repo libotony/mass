@@ -1,0 +1,154 @@
+image_tag:                       dev-latest
+region:                          eu-west-1
+application:                     explore
+project:                         vechain
+root_domain:                     vechain.org
+environment:                     dev
+certificate_arn:                 
+azs:
+  -                              eu-west-1a
+  -                              eu-west-1b
+  -                              eu-west-1c
+vpc_name:                        aws-controltower-VPC
+cidr:                            172.31.0.0/16
+vpc_id:                          vpc-09a1702508635ac94
+public_subnets:
+  -                              subnet-0124d1b1bca4da686
+  -                              subnet-0cf08a1f3aa9954a2
+  -                              subnet-0a963e53f5b50781b
+private_subnets:
+  -                              subnet-00d01ce070a125e58
+  -                              subnet-06b67e91b846414f7
+  -                              subnet-07f6f718172b0c640
+database_subnets:
+  -                              subnet-08a6a2a3a71256a92
+  -                              subnet-064dafcc94474c797
+  -                              subnet-0e6b8a777b8c1f171
+#rate_limit:                      5000
+#rate_limit_exception_list:
+#  -                              185.57.113.46/32
+#  -                              81.39.47.171/32
+#  -                              90.26.60.41/32
+cloudwatch_alarms:               true
+
+networks:
+  main:
+    thor_url:                       https://mainnet.vechain.org
+    mass:
+      cpu:                          256
+      memory:                       512
+      min_capacity:                 1
+      max_capacity:                 4
+      spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
+      ecr_common_repo:              891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/mass
+    chain-scanner:
+      cpu:                          1024
+      memory:                       2048
+      commands:                     
+        -                           --network
+        -                           main
+        -                           --task
+        -                           foundation
+      spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
+      ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/chain-scanner"
+      start_block:
+        blocks:                     0
+        clauses:                    751
+        contracts:                  409987
+        fungible_tokens:            0
+        nfts:                       1304112
+        transactions:               751
+        transfers:                  37840
+      sync_logger_interval:
+        blocks:                     5000
+        clauses:                    5000
+        contracts:                  5000
+        fungible_tokens:            5000
+        nfts:                       5000
+        transactions:               5000
+        transfers:                  5000
+    explore:
+      cpu:                          1024
+      memory:                       2048
+      spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
+      ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/explore"
+    mysql:
+      db_port: 3306
+      allocated_storage: 2000
+      engine: mysql
+      engine_version: 8.0.36
+      instance_class: db.t3.small
+      app_name: explore
+      deletion_protection: false
+      multi_az: false
+      storage_encrypted: false
+      option_settings: [{}] # optional
+      skip_final_snapshot: true
+      publicly_accessible: false
+      backup_retention_period: 7
+      username: admin
+      manage_master_user_password: true
+      db_name: chain
+      apply_immediately: true
+
+
+  #uncomment following top level label if testnet not required
+  test:
+    thor_url:                       https://testnet.vechain.org
+    mass:
+      cpu:                          256
+      memory:                       512
+      min_capacity:                 1
+      max_capacity:                 4
+      spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
+      ecr_common_repo:              891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/mass
+    chain-scanner:
+      cpu:                          1024
+      memory:                       2048
+      commands:                     
+        -                           --network
+        -                           test
+        -                           --task
+        -                           foundation
+      spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
+      ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/chain-scanner"
+      #slack_webhook_url:            ""
+      start_block:
+        blocks:                     0
+        clauses:                    15034
+        contracts:                  15101
+        fungible_tokens:            0
+        nfts:                       1042259
+        transactions:               15034
+        transfers:                  15034
+      sync_logger_interval:
+        blocks:                     5000
+        clauses:                    5000
+        contracts:                  5000
+        fungible_tokens:            5000
+        nfts:                       5000
+        transactions:               5000
+        transfers:                  5000
+    explore:
+      cpu:                          1024
+      memory:                       2048
+      spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
+      ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/explore"
+    mysql:
+      db_port: 3306
+      allocated_storage: 2000
+      engine: mysql
+      engine_version: 8.0.36
+      instance_class: db.t3.small
+      app_name: explore
+      deletion_protection: false
+      multi_az: false
+      storage_encrypted: false
+      option_settings: [{}] # optional
+      skip_final_snapshot: true
+      publicly_accessible: false
+      backup_retention_period: 7
+      username: admin
+      manage_master_user_password: true
+      db_name: chain
+      apply_immediately: true

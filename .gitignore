@@ -4,3 +4,8 @@
 *.tgz
 .DS_Store
 .env
+
+### Terraform ###
+.terraform/
+.terraform.lock.hcl
+
