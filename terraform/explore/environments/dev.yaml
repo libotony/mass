@@ -44,11 +44,59 @@ networks:
     chain-scanner:
       cpu:                          1024
       memory:                       2048
-      commands:                     
-        -                           --network
-        -                           main
-        -                           --task
-        -                           foundation
+      container_commands:                     
+        - ["main", "foundation"]
+        - ["main", "tx-indexer"]
+        - ["main", "authority"]
+        - ["main", "revert"]
+        - ["main", "token", "PLA"]
+        - ["main", "token", "SHA"]
+        - ["main", "token", "EHrT"]
+        - ["main", "token", "DBET"]
+        - ["main", "token", "TIC"]
+        - ["main", "token", "OCE"]
+        - ["main", "token", "SNK"]
+        - ["main", "token", "JUR"]
+        - ["main", "token", "AQD"]
+        - ["main", "token", "YEET"]
+        - ["main", "token", "HAI"]
+        - ["main", "token", "MDN"]
+        - ["main", "token", "VEED"]
+        - ["main", "token", "VPU"]
+        - ["main", "token", "MVG"]
+        - ["main", "token", "WoV"]
+        - ["main", "token", "GEMS"]
+        - ["main", "token", "VEX"]
+        - ["main", "token", "VEUSD"]
+        - ["main", "token", "VVET"]
+        - ["main", "token", "DHN"]
+        - ["main", "token", "UNION"]
+        - ["main", "token", "VST"]
+        - ["main", "token", "PPR"]
+        - ["main", "token", "DRAGON"]
+        - ["main", "token", "VSEA"]
+        - ["main", "token", "BANANA"]
+        - ["main", "token", "GOLD"]
+        - ["main", "token", "LGCT"]
+        - ["main", "token", "VFA"]
+        - ["main", "token", "FCWS"]
+        - ["main", "token", "MVC"]
+        - ["main", "token", "MVA"]
+        - ["main", "token", "SQUAD"]
+        - ["main", "token", "3DT"]
+        - ["main", "token", "LION"]
+        - ["main", "token", "SHT"]
+        - ["main", "token", "BVC"]
+        - ["main", "token", "VSC"]
+        - ["main", "token", "USDV"]
+        - ["main", "token", "Rain"]
+        - ["main", "token", "MILK"]
+        - ["main", "token", "PLG"]
+        - ["main", "token", "EXO"]
+        - ["main", "token", "UNO"]
+        - ["main", "token", "GCRED"]
+        - ["main", "token", "VEME"]
+        - ["main", "token", "BANGZ"]
       spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
       ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/chain-scanner"
       start_block:
@@ -105,11 +153,44 @@ networks:
     chain-scanner:
       cpu:                          1024
       memory:                       2048
-      commands:                     
-        -                           --network
-        -                           test
-        -                           --task
-        -                           foundation
+      container_commands:                     
+        - ["test", "foundation"]
+        - ["test", "tx-indexer"]
+        - ["test", "authority"]
+        - ["test", "revert"]
+        - ["test", "token", "PLA"]
+        - ["test", "token", "EHrT"]
+        - ["test", "token", "DBET"]
+        - ["test", "token", "OCE"]
+        - ["test", "token", "JUR"]
+        - ["test", "token", "YEET"]
+        - ["test", "token", "SNK"]
+        - ["test", "token", "SHA"]
+        - ["test", "token", "MDN"]
+        - ["test", "token", "VEED"]
+        - ["test", "token", "MVG"]
+        - ["test", "token", "GEMS"]
+        - ["test", "token", "VEUSD"]
+        - ["test", "token", "TVIRC"]
+        - ["test", "token", "VVET"]
+        - ["test", "token", "UNION"]
+        - ["test", "token", "VST"]
+        - ["test", "token", "PPR"]
+        - ["test", "token", "DRAGON"]
+        - ["test", "token", "VPU"]
+        - ["test", "token", "VSEA"]
+        - ["test", "token", "BANANA"]
+        - ["test", "token", "LGCT"]
+        - ["test", "token", "VFA"]
+        - ["test", "token", "MVA"]
+        - ["test", "token", "SQUAD"]
+        - ["test", "token", "3DT"]
+        - ["test", "token", "BVC"]
+        - ["test", "token", "MILK"]
+        - ["test", "token", "GCRED"]
+        - ["test", "token", "BANGZ"]
+        - ["test", "token", "VOT3"]
+        - ["test", "token", "B3TR"]
       spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
       ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/chain-scanner"
       #slack_webhook_url:            ""

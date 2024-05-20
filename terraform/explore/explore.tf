@@ -11,6 +11,20 @@ resource "aws_service_discovery_private_dns_namespace" "ns" {
   vpc  = local.env.vpc_id
 }
 
+locals {
+  container_commands = flatten([
+    for network, network_config in local.env.networks : [
+      for command in network_config.chain-scanner.container_commands : {
+        network   = network
+        command   = command
+        cpu       = network_config.chain-scanner.cpu
+        memory    = network_config.chain-scanner.memory
+        ecr_repo  = network_config.chain-scanner.ecr_common_repo
+      }
+    ]
+  ])
+}
+
 ######################
 # Public ALB Security Group
 ######################
@@ -266,22 +280,22 @@ module "ecs-lb-service-mass" {
 ################################################################################
 module "ecs-backend-service-chain-scanner" {
   depends_on       = [module.ecs-cluster]
-  for_each         = local.env.networks
-  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.18"
+  for_each         = { for obj in local.container_commands : "${obj.network}-${join("-", obj.command)}" => obj }
+  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=Support-multiple-containers-per-task"
   vpc_id           = local.env.vpc_id
   region           = local.env.region
   cluster          = module.ecs-cluster.name
   subnets          = concat(local.env.public_subnets, local.env.private_subnets)
   env              = local.env.environment
   is_create_repo   = false
-  ecr_repo_uri     = each.value.chain-scanner.ecr_common_repo
+  ecr_repo_uri     = each.value.ecr_repo
   secrets_enable   = false
   ecr_image_tag    = local.env.image_tag
-  commands         = concat(each.value.chain-scanner.commands)
+  commands         = [each.value.command]
   app_name         = "${each.key}-chain-scanner"
   project          = var.project
-  cpu              = each.value.chain-scanner.cpu
-  memory           = each.value.chain-scanner.memory
+  cpu              = each.value.cpu
+  memory           = each.value.memory
   cidr             = local.env.cidr
   security_groups  = [aws_security_group.ecs_service_sg.id]
   desired_capacity = "1"
@@ -294,6 +308,10 @@ module "ecs-backend-service-chain-scanner" {
       pattern = "Application is UNHEALTHY"
     }
   ]
+  healthcheck = {
+    command             = ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health"]
+    start_delay         = 30
+  }
 
   environment_variables = [
     {
