@@ -12,14 +12,12 @@ resource "aws_service_discovery_private_dns_namespace" "ns" {
 }
 
 locals {
-  container_commands = flatten([
-    for network, network_config in local.env.networks : [
-      for command in network_config.chain-scanner.container_commands : {
-        network   = network
-        command   = command
-        cpu       = network_config.chain-scanner.cpu
-        memory    = network_config.chain-scanner.memory
-        ecr_repo  = network_config.chain-scanner.ecr_common_repo
+container_commands = flatten([
+    for network, config in local.env.networks : [
+      for cmd in config.container_commands : {
+        command = cmd
+        common_config = config.common_config
+        network = network
       }
     ]
   ])
@@ -171,14 +169,14 @@ module "ecs-lb-service-mass" {
   app_subnets                = local.env.private_subnets
   env                        = local.env.environment
   is_create_repo             = false
-  ecr_repo_uri               = each.value.mass.ecr_common_repo
+  ecr_repo_uri               = each.value.common_config.mass.ecr_common_repo
   secrets_enable             = false
   assign_public_ip           = false
   app_name                   = "${each.key}-mass"
   ecr_image_tag              = local.env.image_tag
   project                    = var.project
-  cpu                        = each.value.mass.cpu
-  memory                     = each.value.mass.memory
+  cpu                        = each.value.common_config.mass.cpu
+  memory                     = each.value.common_config.mass.memory
   cidr                       = local.env.cidr
   container_port             = 8080
   certificate_arn            = module.domain.certificate_arn
@@ -199,7 +197,7 @@ module "ecs-lb-service-mass" {
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"
-      value = each.value.mass.spring_profile
+      value = each.value.common_config.mass.spring_profile
     },
     {
       name  = "APP_LOG_LEVEL"
@@ -207,7 +205,7 @@ module "ecs-lb-service-mass" {
     },
     {
       name  = "THOR_URL"
-      value = each.value.thor_url
+      value = each.value.common_config.thor_url
     },
     {
       name  = "APP_LOGGER"
@@ -235,7 +233,7 @@ module "ecs-lb-service-mass" {
     },
     {
       name  = "TYPEORM_DATABASE"
-      value = each.value.mysql.db_name
+      value = each.value.common_config.mysql.db_name
     },
     {
       name  = "TYPEORM_ENTITIES"
@@ -265,7 +263,7 @@ module "ecs-lb-service-mass" {
   enable_ecs_cpu_based_autoscaling    = true
   enable_ecs_memory_based_autoscaling = true
   min_capacity                        = 1
-  max_capacity                        = each.value.mass.max_capacity
+  max_capacity                        = each.value.common_config.mass.max_capacity
   target_cpu_value                    = 70
   target_memory_value                 = 70
   disable_scale_in                    = false
@@ -280,7 +278,7 @@ module "ecs-lb-service-mass" {
 ################################################################################
 module "ecs-backend-service-chain-scanner" {
   depends_on       = [module.ecs-cluster]
-  for_each         = { for obj in local.container_commands : "${obj.network}-${join("-", obj.command)}" => obj }
+  for_each         = { for idx, cmd in local.container_commands : idx => cmd }
   source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=Support-multiple-containers-per-task"
   vpc_id           = local.env.vpc_id
   region           = local.env.region
@@ -288,14 +286,14 @@ module "ecs-backend-service-chain-scanner" {
   subnets          = concat(local.env.public_subnets, local.env.private_subnets)
   env              = local.env.environment
   is_create_repo   = false
-  ecr_repo_uri     = each.value.ecr_repo
+  ecr_repo_uri     = each.value.common_config.chain-scanner.ecr_common_repo
   secrets_enable   = false
   ecr_image_tag    = local.env.image_tag
-  commands         = [each.value.command]
+  command          = each.value.command
   app_name         = "${each.key}-chain-scanner"
   project          = var.project
-  cpu              = each.value.cpu
-  memory           = each.value.memory
+  cpu              = each.value.common_config.chain-scanner.cpu
+  memory           = each.value.common_config.chain-scanner.memory
   cidr             = local.env.cidr
   security_groups  = [aws_security_group.ecs_service_sg.id]
   desired_capacity = "1"
@@ -304,7 +302,7 @@ module "ecs-backend-service-chain-scanner" {
   namespace_id     = aws_service_discovery_private_dns_namespace.ns.id
   log_metric_filters = [
     {
-      name    = "AppUnhealthy",
+      name    = "AppUnhealthy"
       pattern = "Application is UNHEALTHY"
     }
   ]
@@ -324,10 +322,11 @@ module "ecs-backend-service-chain-scanner" {
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"
-      value = each.value.chain-scanner.spring_profile
+      value = each.value.common_config.chain-scanner.spring_profile
     },
-    { name  = "THOR_URL"
-      value = each.value.thor_url
+    {
+      name  = "THOR_URL"
+      value = each.value.common_config.thor_url
     },
     {
       name  = "APP_LOG_LEVEL"
@@ -339,55 +338,55 @@ module "ecs-backend-service-chain-scanner" {
     },
     {
       name  = "CHAIN-SCANNER_START_BLOCK_BLOCKS"
-      value = each.value.chain-scanner.start_block.blocks
+      value = each.value.common_config.chain-scanner.start_block.blocks
     },
     {
       name  = "CHAIN-SCANNER_START_BLOCK_CLAUSES"
-      value = each.value.chain-scanner.start_block.clauses
+      value = each.value.common_config.chain-scanner.start_block.clauses
     },
     {
       name  = "CHAIN-SCANNER_START_BLOCK_CONTRACTS"
-      value = each.value.chain-scanner.start_block.contracts
+      value = each.value.common_config.chain-scanner.start_block.contracts
     },
     {
       name  = "CHAIN-SCANNER_START_BLOCK_NFTS"
-      value = each.value.chain-scanner.start_block.nfts
+      value = each.value.common_config.chain-scanner.start_block.nfts
     },
     {
       name  = "CHAIN-SCANNER_START_BLOCK_TRANSACTIONS"
-      value = each.value.chain-scanner.start_block.transactions
+      value = each.value.common_config.chain-scanner.start_block.transactions
     },
     {
       name  = "CHAIN-SCANNER_START_BLOCK_TRANSFERS"
-      value = each.value.chain-scanner.start_block.transfers
+      value = each.value.common_config.chain-scanner.start_block.transfers
     },
     {
       name  = "CHAIN-SCANNER_SYNC_LOGGER_INTERVAL_BLOCKS"
-      value = each.value.chain-scanner.sync_logger_interval.blocks
+      value = each.value.common_config.chain-scanner.sync_logger_interval.blocks
     },
     {
       name  = "CHAIN-SCANNER_SYNC_LOGGER_INTERVAL_CLAUSES"
-      value = each.value.chain-scanner.sync_logger_interval.clauses
+      value = each.value.common_config.chain-scanner.sync_logger_interval.clauses
     },
     {
       name  = "CHAIN-SCANNER_SYNC_LOGGER_INTERVAL_CONTRACTS"
-      value = each.value.chain-scanner.sync_logger_interval.contracts
+      value = each.value.common_config.chain-scanner.sync_logger_interval.contracts
     },
     {
       name  = "CHAIN-SCANNER_SYNC_LOGGER_INTERVAL_FUNGIBLE_TOKENS"
-      value = each.value.chain-scanner.sync_logger_interval.fungible_tokens
+      value = each.value.common_config.chain-scanner.sync_logger_interval.fungible_tokens
     },
     {
       name  = "CHAIN-SCANNER_SYNC_LOGGER_INTERVAL_NFTS"
-      value = each.value.chain-scanner.sync_logger_interval.nfts
+      value = each.value.common_config.chain-scanner.sync_logger_interval.nfts
     },
     {
       name  = "CHAIN-SCANNER_SYNC_LOGGER_INTERVAL_TRANSACTIONS"
-      value = each.value.chain-scanner.sync_logger_interval.transactions
+      value = each.value.common_config.chain-scanner.sync_logger_interval.transactions
     },
     {
       name  = "CHAIN-SCANNER_SYNC_LOGGER_INTERVAL_TRANSFERS"
-      value = each.value.chain-scanner.sync_logger_interval.transfers
+      value = each.value.common_config.chain-scanner.sync_logger_interval.transfers
     },
     {
       name  = "TYPEORM_CONNECTION"
@@ -395,23 +394,23 @@ module "ecs-backend-service-chain-scanner" {
     },
     {
       name  = "TYPEORM_HOST"
-      value = module.rds[each.key].db_address
+      value = module.rds[each.value.network].db_address
     },
     {
       name  = "TYPEORM_PORT"
-      value = module.rds[each.key].db_port
+      value = module.rds[each.value.network].db_port
     },
     {
       name  = "TYPEORM_USERNAME"
-      value = module.rds[each.key].db_username
+      value = module.rds[each.value.network].db_username
     },
     {
       name  = "TYPEORM_PASSWORD"
-      value = module.rds[each.key].rds_master_password_ssm_value
+      value = module.rds[each.value.network].rds_master_password_ssm_value
     },
     {
       name  = "TYPEORM_DATABASE"
-      value = each.value.mysql.db_name
+      value = each.value.common_config.mysql.db_name
     },
     {
       name  = "TYPEORM_ENTITIES"
@@ -419,7 +418,7 @@ module "ecs-backend-service-chain-scanner" {
     },
     {
       name  = "THOR_REST"
-      value = "https://${each.key}net.live.dev.node.vechain.org"
+      value = "https://${each.value.network}net.live.dev.node.vechain.org"
     },
     {
       name  = "TYPEORM_MIGRATIONS"
@@ -443,14 +442,14 @@ module "ecs-lb-service-explore" {
   app_subnets                = local.env.private_subnets
   env                        = local.env.environment
   is_create_repo             = false
-  ecr_repo_uri               = each.value.explore.ecr_common_repo
+  ecr_repo_uri               = each.value.common_config.explore.ecr_common_repo
   secrets_enable             = false
   assign_public_ip           = false
   app_name                   = "${each.key}-explore"
   ecr_image_tag              = local.env.image_tag
   project                    = var.project
-  cpu                        = each.value.explore.cpu
-  memory                     = each.value.explore.memory
+  cpu                        = each.value.common_config.explore.cpu
+  memory                     = each.value.common_config.explore.memory
   cidr                       = local.env.cidr
   container_port             = 8080
   certificate_arn            = module.domain.certificate_arn
@@ -480,10 +479,10 @@ module "ecs-lb-service-explore" {
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"
-      value = each.value.explore.spring_profile
+      value = each.value.common_config.explore.spring_profile
     },
     { name  = "THOR_URL"
-      value = each.value.thor_url
+      value = each.value.common_config.thor_url
     },
     {
       name  = "APP_LOG_LEVEL"
