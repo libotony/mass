@@ -290,7 +290,7 @@ module "ecs-backend-service-chain-scanner" {
   secrets_enable   = false
   ecr_image_tag    = local.env.image_tag
   command          = each.value.command
-  app_name         = "${each.key}-chain-scanner"
+  app_name         = "${each.value.network}-chain-scanner-${each.value.command[length(each.value.command) -1]}"
   project          = var.project
   cpu              = each.value.common_config.chain-scanner.cpu
   memory           = each.value.common_config.chain-scanner.memory
