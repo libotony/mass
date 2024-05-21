@@ -279,7 +279,7 @@ module "ecs-lb-service-mass" {
 module "ecs-backend-service-chain-scanner" {
   depends_on       = [module.ecs-cluster]
   for_each         = { for idx, cmd in local.container_commands : idx => cmd }
-  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=Support-multiple-containers-per-task"
+  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.25"
   vpc_id           = local.env.vpc_id
   region           = local.env.region
   cluster          = module.ecs-cluster.name
@@ -306,10 +306,6 @@ module "ecs-backend-service-chain-scanner" {
       pattern = "Application is UNHEALTHY"
     }
   ]
-  healthcheck = {
-    command             = ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health"]
-    start_delay         = 30
-  }
 
   environment_variables = [
     {
