@@ -1,4 +1,4 @@
-image_tag:                       dev-latest
+image_tag:                       prod-latest
 region:                          eu-west-1
 application:                     explore
 project:                         vechain
