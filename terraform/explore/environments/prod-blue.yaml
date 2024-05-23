@@ -1,110 +1,238 @@
 image_tag:                       prod-latest
 region:                          eu-west-1
-common_ecr_repo_root:            veworld
+application:                     explore
+project:                         vechain
+root_domain:                     vechain.org
 environment:                     prod-blue
-certificate_arn:                 arn:aws:acm:eu-west-1:905964754131:certificate/695573a6-698a-4309-a427-28dd94fe7633
+certificate_arn:                 
 azs:
   -                              eu-west-1a
   -                              eu-west-1b
   -                              eu-west-1c
+vpc_name:                        aws-controltower-VPC
 cidr:                            172.31.0.0/16
+vpc_id:                          vpc-063f31286d030cc92
 public_subnets:
-  -                              172.31.96.0/20
-  -                              172.31.112.0/20
-  -                              172.31.0.0/20
+  -                              subnet-052e1a2e6154b469e
+  -                              subnet-0d03aa75aa3ece0ef
+  -                              subnet-0902c2000ed8ceb40
 private_subnets:
-  -                              172.31.64.0/20
-  -                              172.31.32.0/20
-  -                              172.31.80.0/20
-database_subnets:                null
-
-
-
-rate_limit:                      '5000'
-rate_limit_exception_list:
-  -                              185.57.113.46/32
-  -                              81.39.47.171/32
-  -                              90.26.60.41/32
+  -                              subnet-0de9c44a1ca31e817
+  -                              subnet-04114edf9ba53a2d8
+  -                              subnet-04c4f908b6609682c
+database_subnets:
+  -                              subnet-077597e5777c0fe79
+  -                              subnet-0070bbcc470de4ee7
+  -                              subnet-0724cfe7f76d64235
+#rate_limit:                      5000
+#rate_limit_exception_list:
+#  -                              185.57.113.46/32
+#  -                              81.39.47.171/32
+#  -                              90.26.60.41/32
 cloudwatch_alarms:               true
-slack_alert_channel:             C05NA25LG78
-slack_alert_workspace:           T03L3PQD8GK
-mongoatlas_project_id:           64d6337acba67e1132a3a4e1
-enabled_nets:
+
+networks:
   main:
-    thor_url:                       https://mainnet.vechain.org
-    api:
-      cpu:                          512
-      memory:                       1024
-      max_capacity:                 4
-      spring_profile:               nft-events,transactions,transfer-events
-      ecr_common_repo:              905964754131.dkr.ecr.eu-west-1.amazonaws.com/veworld/api
-    indexer:
-      cpu: 1024
-      memory: 2048
-      spring_profile: indexer,nft-events,transactions,transfer-events
-      ecr_common_repo: 905964754131.dkr.ecr.eu-west-1.amazonaws.com/veworld/indexer
-      slack_webhook_url: https://hooks.slack.com/services/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
-      start_block:
-        blocks:                     '0'
-        clauses:                    '751'
-        contracts:                  '409987'
-        fungible_tokens:            '0'
-        nfts:                       '1304112'
-        transactions:               '751'
-        transfers:                  '37840'
-      sync_logger_interval:
-        blocks:                     '5000'
-        clauses:                    '5000'
-        contracts:                  '5000'
-        fungible_tokens:            '5000'
-        nfts:                       '5000'
-        transactions:               '5000'
-        transfers:                  '5000'
-    mongodb:
-      type:                         atlas
-      fqdn:                         mainnet.rsmhw.mongodb.net
-      proto:                        mongodb+srv
-      opts:                         retryWrites=true&w=majority
-      cluster_tier:                 M20
-      disk_size_gb:                 250
-      iops:                         3000
-      secret_arn:                   arn:aws:secretsmanager:eu-west-1:905964754131:secret:prod/mongo-atlas-api-NTfIGT
+    container_commands:                     
+      - ["main", "foundation"]
+      - ["main", "tx-indexer"]
+      - ["main", "authority"]
+      - ["main", "revert"]
+      - ["main", "token", "PLA"]
+      - ["main", "token", "SHA"]
+      - ["main", "token", "EHrT"]
+      - ["main", "token", "DBET"]
+      - ["main", "token", "TIC"]
+      - ["main", "token", "OCE"]
+      - ["main", "token", "SNK"]
+      - ["main", "token", "JUR"]
+      - ["main", "token", "AQD"]
+      - ["main", "token", "YEET"]
+      - ["main", "token", "HAI"]
+      - ["main", "token", "MDN"]
+      - ["main", "token", "VEED"]
+      - ["main", "token", "VPU"]
+      - ["main", "token", "MVG"]
+      - ["main", "token", "WoV"]
+      - ["main", "token", "GEMS"]
+      - ["main", "token", "VEX"]
+      - ["main", "token", "VEUSD"]
+      - ["main", "token", "VVET"]
+      - ["main", "token", "DHN"]
+      - ["main", "token", "UNION"]
+      - ["main", "token", "VST"]
+      - ["main", "token", "PPR"]
+      - ["main", "token", "DRAGON"]
+      - ["main", "token", "VSEA"]
+      - ["main", "token", "BANANA"]
+      - ["main", "token", "GOLD"]
+      - ["main", "token", "LGCT"]
+      - ["main", "token", "VFA"]
+      - ["main", "token", "FCWS"]
+      - ["main", "token", "MVC"]
+      - ["main", "token", "MVA"]
+      - ["main", "token", "SQUAD"]
+      - ["main", "token", "3DT"]
+      - ["main", "token", "LION"]
+      - ["main", "token", "SHT"]
+      - ["main", "token", "BVC"]
+      - ["main", "token", "VSC"]
+      - ["main", "token", "USDV"]
+      - ["main", "token", "Rain"]
+      - ["main", "token", "MILK"]
+      - ["main", "token", "PLG"]
+      - ["main", "token", "EXO"]
+      - ["main", "token", "UNO"]
+      - ["main", "token", "GCRED"]
+      - ["main", "token", "VEME"]
+      - ["main", "token", "BANGZ"]
+    common_config:
+      thor_url:                       https://mainnet.vechain.org
+      mass:
+        cpu:                          256
+        memory:                       512
+        min_capacity:                 1
+        max_capacity:                 4
+        spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
+        ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/mass
+      chain-scanner:
+        cpu:                          1024
+        memory:                       2048
+        spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
+        ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/chain-scanner
+        start_block:
+          blocks:                     0
+          clauses:                    751
+          contracts:                  409987
+          fungible_tokens:            0
+          nfts:                       1304112
+          transactions:               751
+          transfers:                  37840
+        sync_logger_interval:
+          blocks:                     5000
+          clauses:                    5000
+          contracts:                  5000
+          fungible_tokens:            5000
+          nfts:                       5000
+          transactions:               5000
+          transfers:                  5000
+      explore:
+        cpu:                          1024
+        memory:                       2048
+        spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
+        ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/explore
+      mysql:
+        db_port: 3306
+        allocated_storage: 2000
+        engine: mysql
+        engine_version: 8.0.36
+        instance_class: db.t3.small
+        app_name: explore
+        deletion_protection: false
+        multi_az: false
+        storage_encrypted: false
+        option_settings: [{}] # optional
+        skip_final_snapshot: true
+        publicly_accessible: false
+        backup_retention_period: 7
+        username: admin
+        manage_master_user_password: true
+        db_name: chain
+        apply_immediately: true
+
+
+  #uncomment following top level label if testnet not required
   test:
-    thor_url:                       https://testnet.vechain.org
-    api:
-      cpu:                          512
-      memory:                       1024
-      max_capacity:                 2
-      spring_profile:               nft-events,transactions,transfer-events
-      ecr_common_repo:              905964754131.dkr.ecr.eu-west-1.amazonaws.com/veworld/api
-    indexer:
-      cpu: 1024
-      memory: 2048
-      spring_profile: indexer,nft-events,transactions,transfer-events
-      ecr_common_repo: 905964754131.dkr.ecr.eu-west-1.amazonaws.com/veworld/indexer
-      slack_webhook_url: https://hooks.slack.com/services/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
-      start_block:
-        blocks:                     '0'
-        clauses:                    '15034'
-        contracts:                  '15101'
-        fungible_tokens:            '0'
-        nfts:                       '1042259'
-        transactions:               '15034'
-        transfers:                  '15034'
-      sync_logger_interval:
-        blocks:                     '5000'
-        clauses:                    '5000'
-        contracts:                  '5000'
-        fungible_tokens:            '5000'
-        nfts:                       '5000'
-        transactions:               '5000'
-        transfers:                  '5000'
-    mongodb:
-      type:                         atlas
-      fqdn:                         testnet.rsmhw.mongodb.net
-      proto:                        mongodb+srv
-      opts:                         retryWrites=true&w=majority
-      cluster_tier:                 M10
-      disk_size_gb:                 119
-      iops:                         3000
-      secret_arn:                   arn:aws:secretsmanager:eu-west-1:905964754131:secret:prod/mongo-atlas-api-NTfIGT
+    container_commands:                     
+      - ["test", "foundation"]
+      - ["test", "tx-indexer"]
+      - ["test", "authority"]
+      - ["test", "revert"]
+      - ["test", "token", "PLA"]
+      - ["test", "token", "EHrT"]
+      - ["test", "token", "DBET"]
+      - ["test", "token", "OCE"]
+      - ["test", "token", "JUR"]
+      - ["test", "token", "YEET"]
+      - ["test", "token", "SNK"]
+      - ["test", "token", "SHA"]
+      - ["test", "token", "MDN"]
+      - ["test", "token", "VEED"]
+      - ["test", "token", "MVG"]
+      - ["test", "token", "GEMS"]
+      - ["test", "token", "VEUSD"]
+      - ["test", "token", "TVIRC"]
+      - ["test", "token", "VVET"]
+      - ["test", "token", "UNION"]
+      - ["test", "token", "VST"]
+      - ["test", "token", "PPR"]
+      - ["test", "token", "DRAGON"]
+      - ["test", "token", "VPU"]
+      - ["test", "token", "VSEA"]
+      - ["test", "token", "BANANA"]
+      - ["test", "token", "LGCT"]
+      - ["test", "token", "VFA"]
+      - ["test", "token", "MVA"]
+      - ["test", "token", "SQUAD"]
+      - ["test", "token", "3DT"]
+      - ["test", "token", "BVC"]
+      - ["test", "token", "MILK"]
+      - ["test", "token", "GCRED"]
+      - ["test", "token", "BANGZ"]
+      - ["test", "token", "VOT3"]
+      - ["test", "token", "B3TR"]
+    common_config:
+      thor_url:                       https://testnet.vechain.org
+      mass:
+        cpu:                          256
+        memory:                       512
+        min_capacity:                 1
+        max_capacity:                 4
+        spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
+        ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/mass
+      chain-scanner:
+        cpu:                          1024
+        memory:                       2048
+        spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
+        ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/chain-scanner
+        #slack_webhook_url:            ""
+        start_block:
+          blocks:                     0
+          clauses:                    15034
+          contracts:                  15101
+          fungible_tokens:            0
+          nfts:                       1042259
+          transactions:               15034
+          transfers:                  15034
+        sync_logger_interval:
+          blocks:                     5000
+          clauses:                    5000
+          contracts:                  5000
+          fungible_tokens:            5000
+          nfts:                       5000
+          transactions:               5000
+          transfers:                  5000
+      explore:
+        cpu:                          1024
+        memory:                       2048
+        spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
+        ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/explore
+      mysql:
+        db_port: 3306
+        allocated_storage: 2000
+        engine: mysql
+        engine_version: 8.0.36
+        instance_class: db.t3.small
+        app_name: explore
+        deletion_protection: false
+        multi_az: false
+        storage_encrypted: false
+        option_settings: [{}] # optional
+        skip_final_snapshot: true
+        publicly_accessible: false
+        backup_retention_period: 7
+        username: admin
+        manage_master_user_password: true
+        db_name: chain
+        apply_immediately: true
+        
