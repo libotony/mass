@@ -157,7 +157,7 @@ module "ecs-cluster" {
 ################################################################################
 
 resource "aws_ecs_cluster_capacity_providers" "ecs_capacity_provider" {
-  count = local.env.environment == "prod" ? 0 : 1
+  count = local.env.environment == "dev" ? 1 : 0
   cluster_name = module.ecs-cluster.name
 
   capacity_providers = ["FARGATE_SPOT"]
