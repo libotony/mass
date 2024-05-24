@@ -98,8 +98,8 @@ networks:
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/mass
       chain-scanner:
-        cpu:                          1024
-        memory:                       2048
+        cpu:                          256
+        memory:                       512
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/chain-scanner"
         start_block:
@@ -119,8 +119,8 @@ networks:
           transactions:               5000
           transfers:                  5000
       explore:
-        cpu:                          1024
-        memory:                       2048
+        cpu:                          256
+        memory:                       512
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/explore"
       mysql:
@@ -193,8 +193,8 @@ networks:
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/mass
       chain-scanner:
-        cpu:                          1024
-        memory:                       2048
+        cpu:                          256
+        memory:                       512
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/chain-scanner"
         #slack_webhook_url:            ""
@@ -215,8 +215,8 @@ networks:
           transactions:               5000
           transfers:                  5000
       explore:
-        cpu:                          1024
-        memory:                       2048
+        cpu:                          256
+        memory:                       512
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/explore"
       mysql:
