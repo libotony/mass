@@ -7,9 +7,7 @@ terraform {
   }
 
   backend "s3" {
-    # The states of DEV and PROD environments are stored in separate S3 buckets in their
-    # respective AWS accounts. The {{{ENV}}} placeholder is replaced manually (dev/prod)
-    bucket               = "explore-terraform-state-dev"
+    # The S3 backend bucket is configured in '../environments/<env>/backend.config'
     key                  = "explore.tfstate"
     region               = "eu-west-1"
     workspace_key_prefix = "workspaces"
@@ -62,7 +60,7 @@ data "external" "git" {
 data "terraform_remote_state" "vpc" {
   backend = "s3"
   config = {
-    bucket = "explore-terraform-state-dev"
+    bucket = startswith(local.env.environment, "prod-") ? "explore-terraform-state-prod" : "explore-terraform-state-dev"
     key    = "workspaces/${startswith(local.env.environment, "prod-") ? "prod" : local.env.environment}/explore-vpc.tfstate"
     region = "eu-west-1"
   }
