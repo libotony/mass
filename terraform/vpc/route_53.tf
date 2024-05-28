@@ -11,8 +11,8 @@
 # }
 
 locals {
-  dev_mainnet_lb = terraform.workspace == "dev" ? try(data.terraform_remote_state.explore-dev.outputs.load_balancer_domain_mainnet, "placeholder1") : "placeholder"
-  dev_testnet_lb = terraform.workspace == "dev" ? try(data.terraform_remote_state.explore-dev.outputs.load_balancer_domain_testnet, "placeholder1") : "placeholder"
+  dev_mainnet_lb = terraform.workspace == "dev" ? try(data.terraform_remote_state.explore-dev[0].outputs.load_balancer_domain_mainnet, "placeholder1") : "placeholder"
+  dev_testnet_lb = terraform.workspace == "dev" ? try(data.terraform_remote_state.explore-dev[0].outputs.load_balancer_domain_testnet, "placeholder1") : "placeholder"
   # live_mainnet_lb = terraform.workspace == "prod" ? var.live_color == "blue" ? data.terraform_remote_state.api-blue.outputs.load_balancer_domain_mainnet : data.terraform_remote_state.api-green.outputs.load_balancer_domain_mainnet : ""
   # live_testnet_lb = terraform.workspace == "prod" ? var.live_color == "blue" ? data.terraform_remote_state.api-blue.outputs.load_balancer_domain_testnet : data.terraform_remote_state.api-green.outputs.load_balancer_domain_testnet : ""
   # # If the dead environment has been torn down, dead records will be nullified

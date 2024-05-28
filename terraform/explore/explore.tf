@@ -189,7 +189,7 @@ module "ecs-lb-service-mass" {
   ecr_repo_uri               = each.value.common_config.mass.ecr_common_repo
   secrets_enable             = false
   assign_public_ip           = false
-  app_name                   = "${each.key}-mass"
+  app_name                   = each.key
   ecr_image_tag              = local.env.image_tag
   project                    = var.project
   cpu                        = each.value.common_config.mass.cpu
@@ -458,7 +458,7 @@ module "ecs-lb-service-explore" {
   ecr_repo_uri               = each.value.common_config.explore.ecr_common_repo
   secrets_enable             = false
   assign_public_ip           = false
-  app_name                   = "${each.key}-explore"
+  app_name                   = each.key
   ecr_image_tag              = local.env.image_tag
   project                    = var.project
   cpu                        = each.value.common_config.explore.cpu

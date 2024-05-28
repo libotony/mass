@@ -1,0 +1,5 @@
+region:                          eu-west-1
+project:                         vechain
+environment:                     prod
+application:                     explore
+root_domain:                     vechain.org
