@@ -176,7 +176,7 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_capacity_provider" {
 module "ecs-lb-service-mass" {
   depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
   for_each                   = local.env.networks
-  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.18"
+  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.26"
   region                     = local.env.region
   vpc_id                     = local.env.vpc_id
   cluster_name               = module.ecs-cluster.name
@@ -296,7 +296,7 @@ module "ecs-lb-service-mass" {
 module "ecs-backend-service-chain-scanner" {
   depends_on       = [module.ecs-cluster]
   for_each         = { for idx, cmd in local.container_commands : idx => cmd }
-  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.25"
+  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.26"
   vpc_id           = local.env.vpc_id
   region           = local.env.region
   cluster          = module.ecs-cluster.name
@@ -446,7 +446,7 @@ module "ecs-backend-service-chain-scanner" {
 module "ecs-lb-service-explore" {
   depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
   for_each                   = local.env.networks
-  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.18"
+  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.26"
   vpc_id                     = local.env.vpc_id
   region                     = local.env.region
   cluster_name               = module.ecs-cluster.name
