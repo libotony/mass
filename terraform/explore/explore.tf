@@ -124,22 +124,6 @@ resource "aws_security_group" "ecs_service_sg" {
 }
 
 ################################################################################
-# Domain & Certificate creation
-################################################################################
-data "aws_lb_hosted_zone_id" "current" {}
-locals {
-  domains = [
-    { name : "*.${local.env.environment}.${local.env.application}.${local.env.root_domain}", zone : data.terraform_remote_state.vpc.outputs.explore_public_zone_id },
-  ]
-}
-
-module "domain" {
-  source      = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//domains?ref=v.1.0.7"
-  domain_name = local.domains[0].name
-  zone_id     = local.domains[0].zone
-}
-
-################################################################################
 # Module For ECS Cluster creation
 ################################################################################
 
@@ -176,7 +160,7 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_capacity_provider" {
 module "ecs-lb-service-mass" {
   depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
   for_each                   = local.env.networks
-  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.26"
+  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=truncate-alb-names-if-required"
   region                     = local.env.region
   vpc_id                     = local.env.vpc_id
   cluster_name               = module.ecs-cluster.name
@@ -189,14 +173,14 @@ module "ecs-lb-service-mass" {
   ecr_repo_uri               = each.value.common_config.mass.ecr_common_repo
   secrets_enable             = false
   assign_public_ip           = false
-  app_name                   = each.key
+  app_name                   = "${each.key}-mass"
   ecr_image_tag              = local.env.image_tag
   project                    = var.project
   cpu                        = each.value.common_config.mass.cpu
   memory                     = each.value.common_config.mass.memory
   cidr                       = local.env.cidr
   container_port             = 8080
-  certificate_arn            = module.domain.certificate_arn
+  certificate_arn            = data.terraform_remote_state.vpc.outputs.certificate_arn
   ecs_sg                     = [aws_security_group.ecs_service_sg.id]
   rule_0_path_pattern        = ["/api/v*", "/api-docs", "/swagger-ui/*"]
   alb_sg                     = [aws_security_group.internal-alb-sg.id]
@@ -446,7 +430,7 @@ module "ecs-backend-service-chain-scanner" {
 module "ecs-lb-service-explore" {
   depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
   for_each                   = local.env.networks
-  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.26"
+  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=truncate-alb-names-if-required"
   vpc_id                     = local.env.vpc_id
   region                     = local.env.region
   cluster_name               = module.ecs-cluster.name
@@ -458,14 +442,14 @@ module "ecs-lb-service-explore" {
   ecr_repo_uri               = each.value.common_config.explore.ecr_common_repo
   secrets_enable             = false
   assign_public_ip           = false
-  app_name                   = each.key
+  app_name                   = "${each.key}-explore"
   ecr_image_tag              = local.env.image_tag
   project                    = var.project
   cpu                        = each.value.common_config.explore.cpu
   memory                     = each.value.common_config.explore.memory
   cidr                       = local.env.cidr
   container_port             = 8080
-  certificate_arn            = module.domain.certificate_arn
+  certificate_arn            = data.terraform_remote_state.vpc.outputs.certificate_arn
   ecs_sg                     = [aws_security_group.ecs_service_sg.id]
   rule_0_path_pattern        = ["/api/v*", "/api-docs", "/swagger-ui/*"]
   alb_sg                     = [aws_security_group.alb-sg.id]
