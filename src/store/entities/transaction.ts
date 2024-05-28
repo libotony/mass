@@ -1,13 +1,13 @@
 import { Entity, Column, PrimaryColumn, CreateDateColumn } from 'typeorm'
-import { fixedBytes } from '../../explorer-db/transformers'
+import { fixedBytes, simpleJSON } from '../../explorer-db/transformers'
 import { PendingTransaction } from '../../thor'
 
 @Entity()
 export class Transaction {
-    @PrimaryColumn({ type: 'blob', length: 32, transformer: fixedBytes(32, 'tx.txID') })
+    @PrimaryColumn({ type: 'binary', length: 32, transformer: fixedBytes(32, 'tx.txID') })
     public txID!: string
 
-    @Column('simple-json')
+    @Column({ type: 'longtext', transformer: simpleJSON<Omit<PendingTransaction, 'meta'>>('mass-store.tx.body')})
     public body!: Omit<PendingTransaction, 'meta'>
 
     @Column({ type: 'varchar', nullable: true })

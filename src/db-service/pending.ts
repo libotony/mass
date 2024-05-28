@@ -1,6 +1,6 @@
 import *  as LRU from 'lru-cache'
 import { getConnection } from 'typeorm'
-import { Transaction } from '../local-store/entities/transaction'
+import { Transaction } from '../store/entities/transaction'
 import * as thor from '../thor'
 import { getBest } from './block'
 import { isNonReversible } from './cache'
@@ -25,7 +25,7 @@ export const getPending = async (txID: string): Promise<PendingTransactionWithSt
         }
     }
 
-    const repo = getConnection('local').getRepository(Transaction)
+    const repo = getConnection('mass-store').getRepository(Transaction)
     if (!tx) {
         const t1 = await repo.findOne({ txID })
         if (t1) {
@@ -68,7 +68,7 @@ export const getPending = async (txID: string): Promise<PendingTransactionWithSt
 const updateStatus = async (tx: PendingTransactionWithState): Promise<void> => {
     const best = await getBest()
     const ref = parseInt(tx.blockRef.slice(0, 10), 16)
-    const repo = getConnection('local').getRepository(Transaction)
+    const repo = getConnection('mass-store').getRepository(Transaction)
 
     if (tx.dependsOn !== null) {
         const dep = await getTransaction(tx.dependsOn)
