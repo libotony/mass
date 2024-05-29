@@ -144,10 +144,10 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_capacity_provider" {
   count = local.env.environment == "dev" ? 1 : 0
   cluster_name = module.ecs-cluster.name
 
-  capacity_providers = ["FARGATE_SPOT"]
+  capacity_providers = ["FARGATE_SPOT", "FARGATE"]
 
   default_capacity_provider_strategy {
-    base              = 1
+    base              = 0
     weight            = 100
     capacity_provider = "FARGATE_SPOT"
   }
