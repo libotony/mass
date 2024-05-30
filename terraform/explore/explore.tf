@@ -242,7 +242,7 @@ module "ecs-lb-service-mass" {
     },
     {
       name  = "THOR_REST"
-      value = "https://${each.key}net.live.dev.node.vechain.org"
+      value = "https://${each.key}net.live.${startswith(local.env.environment, "prod") ? "prod" : "dev"}.node.vechain.org"
     },
     {
       name  = "NETWORK"
@@ -315,7 +315,7 @@ module "ecs-backend-service-chain-scanner" {
     },
     {
       name  = "ENVIRONMENT_NAME"
-      value = local.env.environment
+      value = startswith(local.env.environment, "prod") ? "prod" : "dev"
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"
@@ -415,7 +415,7 @@ module "ecs-backend-service-chain-scanner" {
     },
     {
       name  = "THOR_REST"
-      value = "https://${each.value.network}net.live.dev.node.vechain.org"
+      value = "https://${each.value.network}net.live.${startswith(local.env.environment, "prod") ? "prod" : "dev"}.node.vechain.org"
     },
     {
       name  = "TYPEORM_MIGRATIONS"
@@ -472,7 +472,7 @@ module "ecs-lb-service-explore" {
     },
     {
       name  = "NODE_ENV"
-      value = local.env.environment
+      value = startswith(local.env.environment, "prod") ? "production" : "dev"
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"
