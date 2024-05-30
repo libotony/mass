@@ -1,14 +1,19 @@
-import * as os from 'os'
 import * as path from 'path'
-import { createConnection, LessThan } from 'typeorm'
+import { createConnection, getConnectionOptions, LessThan } from 'typeorm'
 import { Transaction } from './entities/transaction'
+import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions'
 
-export const initLocalStore = async () => {
-    const location = path.join(os.homedir(), '.mass', 'local.db')
+export const initMassStore = async () => {
+    let opts = (await getConnectionOptions()) as MysqlConnectionOptions
+
     const conn = await createConnection({
-        name: 'local',
-        type: 'better-sqlite3',
-        database: location,
+        name: 'mass-store',
+        type: 'mysql',
+        database: 'mass',
+        username: opts.username,
+        password: opts.password,
+        host: opts.host,
+        port: opts.port,
         entities: [path.join(__dirname, 'entities/*')],
         synchronize: true
     })

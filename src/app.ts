@@ -3,13 +3,13 @@ import * as Logger from 'morgan'
 import { hang, HttpError } from 'express-toolbox'
 import { getConnectionOptions, createConnection } from 'typeorm'
 import { getBest } from './db-service/block'
-import { initLocalStore } from './local-store'
+import { initMassStore } from './store'
 import { loadTokenConfigFromDB } from './utils'
 
 export const app = Express()
 
 hang(app).until(async () => {
-    await initLocalStore()
+    await initMassStore()
     
     const opt = await getConnectionOptions()
     await createConnection(Object.assign({}, opt, { synchronize: false, logging: false }))
