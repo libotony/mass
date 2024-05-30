@@ -57,3 +57,10 @@ export const setupToken = (conf: TokenConfig) => {
         typeToSymbol.set(token.type, symbol)
     }
 }
+
+export const listTokens = () => {
+    if (config) {
+        return Object.keys(config)
+    }
+    return []
+}
