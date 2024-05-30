@@ -7,6 +7,8 @@ import { BLOCK_INTERVAL } from '../utils'
 import { listTokens } from '../token'
 
 const tolerableBlockGap = 6
+const testnetOnly = ['TVIRC', 'VOT3', 'B3TR']
+const isMainnet = process.env['NETWORK'] != 'testnet'
 
 const router = Router()
 export = router
@@ -63,6 +65,9 @@ router.get('/overview', try$(async (req, res) => {
     const tokens = listTokens()
     for (const token of tokens) {
         if (token === 'VET' || token === 'VTHO') { 
+            continue
+        }
+        if (isMainnet && testnetOnly.includes(token)) { 
             continue
         }
         check(`token-${token}`, `token-${token}-head`)
