@@ -44,7 +44,10 @@ router.get('/overview', try$(async (req, res) => {
         const index = tasks.findIndex(x => x.key === key)
         
         if (index < 0) {
-            overview.tasks.push({ name, blocks: -1 })
+            // ignore missing token task
+            if (!name.startsWith('token-')) { 
+                overview.tasks.push({ name, blocks: -1 })
+            }
             return
         }
 
