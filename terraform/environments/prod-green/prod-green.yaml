@@ -3,7 +3,7 @@ region:                          eu-west-1
 application:                     explore
 project:                         vechain
 root_domain:                     vechain.org
-environment:                     prod-blue
+environment:                     prod-green
 certificate_arn:                 
 azs:
   -                              eu-west-1a
@@ -30,6 +30,8 @@ database_subnets:
 #  -                              81.39.47.171/32
 #  -                              90.26.60.41/32
 cloudwatch_alarms:               true
+slack_alert_channel:             C074MFLD2CW
+slack_alert_workspace:           T03L3PQD8GK
 
 networks:
   main:

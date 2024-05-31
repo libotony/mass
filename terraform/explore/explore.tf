@@ -124,28 +124,12 @@ resource "aws_security_group" "ecs_service_sg" {
 }
 
 ################################################################################
-# Domain & Certificate creation
-################################################################################
-data "aws_lb_hosted_zone_id" "current" {}
-locals {
-  domains = [
-    { name : "*.${local.env.environment}.${local.env.application}.${local.env.root_domain}", zone : data.terraform_remote_state.vpc.outputs.explore_public_zone_id },
-  ]
-}
-
-module "domain" {
-  source      = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//domains?ref=v.1.0.7"
-  domain_name = local.domains[0].name
-  zone_id     = local.domains[0].zone
-}
-
-################################################################################
 # Module For ECS Cluster creation
 ################################################################################
 
 module "ecs-cluster" {
   # temporary filter to avoid deployment of new ECS cluster from original prod workspace
-  source  = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs_cluster?ref=v.1.0.4"
+  source  = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs_cluster?ref=v.1.0.27"
   env     = local.env.environment
   project = var.project
   vpc_id  = local.env.vpc_id
@@ -160,10 +144,10 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_capacity_provider" {
   count = local.env.environment == "dev" ? 1 : 0
   cluster_name = module.ecs-cluster.name
 
-  capacity_providers = ["FARGATE_SPOT"]
+  capacity_providers = ["FARGATE_SPOT", "FARGATE"]
 
   default_capacity_provider_strategy {
-    base              = 1
+    base              = 0
     weight            = 100
     capacity_provider = "FARGATE_SPOT"
   }
@@ -176,7 +160,7 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_capacity_provider" {
 module "ecs-lb-service-mass" {
   depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
   for_each                   = local.env.networks
-  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.26"
+  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.27"
   region                     = local.env.region
   vpc_id                     = local.env.vpc_id
   cluster_name               = module.ecs-cluster.name
@@ -196,7 +180,7 @@ module "ecs-lb-service-mass" {
   memory                     = each.value.common_config.mass.memory
   cidr                       = local.env.cidr
   container_port             = 8080
-  certificate_arn            = module.domain.certificate_arn
+  certificate_arn            = data.terraform_remote_state.vpc.outputs.certificate_arn
   ecs_sg                     = [aws_security_group.ecs_service_sg.id]
   rule_0_path_pattern        = ["/api/v*", "/api-docs", "/swagger-ui/*"]
   alb_sg                     = [aws_security_group.internal-alb-sg.id]
@@ -258,7 +242,7 @@ module "ecs-lb-service-mass" {
     },
     {
       name  = "THOR_REST"
-      value = "https://${each.key}net.live.dev.node.vechain.org"
+      value = each.value.common_config.thor_rest_url
     },
     {
       name  = "NETWORK"
@@ -296,7 +280,7 @@ module "ecs-lb-service-mass" {
 module "ecs-backend-service-chain-scanner" {
   depends_on       = [module.ecs-cluster]
   for_each         = { for idx, cmd in local.container_commands : idx => cmd }
-  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.26"
+  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.27"
   vpc_id           = local.env.vpc_id
   region           = local.env.region
   cluster          = module.ecs-cluster.name
@@ -331,7 +315,7 @@ module "ecs-backend-service-chain-scanner" {
     },
     {
       name  = "ENVIRONMENT_NAME"
-      value = local.env.environment
+      value = startswith(local.env.environment, "prod") ? "prod" : "dev"
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"
@@ -431,7 +415,7 @@ module "ecs-backend-service-chain-scanner" {
     },
     {
       name  = "THOR_REST"
-      value = "https://${each.value.network}net.live.dev.node.vechain.org"
+      value = each.value.common_config.thor_rest_url
     },
     {
       name  = "TYPEORM_MIGRATIONS"
@@ -446,7 +430,7 @@ module "ecs-backend-service-chain-scanner" {
 module "ecs-lb-service-explore" {
   depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
   for_each                   = local.env.networks
-  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.26"
+  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.27"
   vpc_id                     = local.env.vpc_id
   region                     = local.env.region
   cluster_name               = module.ecs-cluster.name
@@ -465,7 +449,7 @@ module "ecs-lb-service-explore" {
   memory                     = each.value.common_config.explore.memory
   cidr                       = local.env.cidr
   container_port             = 8080
-  certificate_arn            = module.domain.certificate_arn
+  certificate_arn            = data.terraform_remote_state.vpc.outputs.certificate_arn
   ecs_sg                     = [aws_security_group.ecs_service_sg.id]
   rule_0_path_pattern        = ["/api/v*", "/api-docs", "/swagger-ui/*"]
   alb_sg                     = [aws_security_group.alb-sg.id]
@@ -488,7 +472,7 @@ module "ecs-lb-service-explore" {
     },
     {
       name  = "NODE_ENV"
-      value = local.env.environment
+      value = startswith(local.env.environment, "prod") ? "production" : "dev"
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"
