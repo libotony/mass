@@ -51,7 +51,6 @@ resource "aws_instance" "db_initializer" {
   for_each                    = local.env.networks
   ami                         = "ami-04fe22dfadec6f0b6"
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
-  associate_public_ip_address = true
   instance_type               = "t2.micro"
   subnet_id                   = local.env.private_subnets[0]
   user_data                   = <<-EOF
