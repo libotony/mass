@@ -65,9 +65,8 @@ resource "aws_instance" "db_initializer" {
     dnf install mysql-community-client -y
 
     # Initialize the 'mass' database
-    mysql -h ${module.rds[each.key].db_address} -u ${module.rds[each.key].db_username} -p'${module.rds[each.key].rds_master_password_ssm_value}' <<EOSQL
-      CREATE DATABASE IF NOT EXISTS mass;
-    EOSQL
+    mysql -h ${module.rds[each.key].db_address} -u ${module.rds[each.key].db_username} -p'${module.rds[each.key].rds_master_password_ssm_value}' -e "CREATE DATABASE IF NOT EXISTS mass;"
+    mysql -h ${module.rds[each.key].db_address} -u ${module.rds[each.key].db_username} -p'${module.rds[each.key].rds_master_password_ssm_value}' -e "SHOW DATABASES;"
 
     # Shutdown the instance after initialization
     shutdown -h now
