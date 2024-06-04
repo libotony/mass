@@ -12,12 +12,13 @@ resource "aws_service_discovery_private_dns_namespace" "ns" {
 }
 
 locals {
-container_commands = flatten([
+  container_commands = flatten([
     for network, config in local.env.networks : [
-      for cmd in config.container_commands : {
-        command = cmd
+      for i, cmd in range(length(config.container_commands)) : {
+        index         = "${network}-${i}"
+        command       = config.container_commands[i]
         common_config = config.common_config
-        network = network
+        network       = network
       }
     ]
   ])
@@ -279,7 +280,7 @@ module "ecs-lb-service-mass" {
 ################################################################################
 module "ecs-backend-service-chain-scanner" {
   depends_on       = [module.ecs-cluster]
-  for_each         = { for idx, cmd in local.container_commands : idx => cmd }
+  for_each         = {for config_obj in local.container_commands : config_obj.index => config_obj}
   source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.27"
   vpc_id           = local.env.vpc_id
   region           = local.env.region
