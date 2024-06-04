@@ -88,8 +88,16 @@ networks:
       - ["main", "token", "GCRED"]
       - ["main", "token", "VEME"]
       - ["main", "token", "BANGZ"]
+      - ["main", "token", "APHI"]
+      - ["main", "token", "COJ"]
+      - ["main", "token", "PEPE"]
+      - ["main", "token", "VDOG"]
+      - ["main", "token", "BIGV"]
+      - ["main", "token", "SL4Y"]
+      - ["main", "token", "cool"]
     common_config:
       thor_url:                       https://mainnet.vechain.org
+      thor_rest_url:                  https://mainnet.live.prod.node.vechain.org
       mass:
         cpu:                          256
         memory:                       512
@@ -183,8 +191,10 @@ networks:
       - ["test", "token", "BANGZ"]
       - ["test", "token", "VOT3"]
       - ["test", "token", "B3TR"]
+      - ["test", "token", "COJ"]
     common_config:
       thor_url:                       https://testnet.vechain.org
+      thor_rest_url:                  https://testnet.live.prod.node.vechain.org
       mass:
         cpu:                          256
         memory:                       512
@@ -237,4 +247,3 @@ networks:
         manage_master_user_password: true
         db_name: chain
         apply_immediately: true
-        

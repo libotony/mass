@@ -88,6 +88,13 @@ networks:
       - ["main", "token", "GCRED"]
       - ["main", "token", "VEME"]
       - ["main", "token", "BANGZ"]
+      - ["main", "token", "APHI"]
+      - ["main", "token", "COJ"]
+      - ["main", "token", "PEPE"]
+      - ["main", "token", "VDOG"]
+      - ["main", "token", "BIGV"]
+      - ["main", "token", "SL4Y"]
+      - ["main", "token", "cool"]
     common_config:
       thor_url:                       https://mainnet.vechain.org
       thor_rest_url:                  https://mainnet.live.dev.node.vechain.org
@@ -184,6 +191,7 @@ networks:
       - ["test", "token", "BANGZ"]
       - ["test", "token", "VOT3"]
       - ["test", "token", "B3TR"]
+      - ["test", "token", "COJ"]
     common_config:
       thor_url:                       https://testnet.vechain.org
       thor_rest_url:                  https://testnet.live.dev.node.vechain.org
