@@ -151,7 +151,6 @@ networks:
         apply_immediately: true
 
 
-  #uncomment following top level label if testnet not required
   test:
     container_commands:                     
       - ["test", "foundation"]
