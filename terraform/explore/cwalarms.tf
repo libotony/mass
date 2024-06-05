@@ -127,7 +127,7 @@ locals {
       alarm_name          = "${v.service_name}_lowcpu_alarm"
       comparison_operator = "LessThanOrEqualToThreshold"
       evaluation_periods  = 3
-      threshold           = 2
+      threshold           = 0
       namespace           = "AWS/ECS"
       period              = 300
       statistic           = "Average"
@@ -146,7 +146,7 @@ locals {
       alarm_name          = "${v.service_name}_lowmem_alarm"
       comparison_operator = "LessThanOrEqualToThreshold"
       evaluation_periods  = 3
-      threshold           = 2
+      threshold           = 1
       namespace           = "AWS/ECS"
       period              = 300
       statistic           = "Average"
@@ -287,7 +287,7 @@ locals {
       alarm_name          = "${v.service_name}_lowcpu_alarm"
       comparison_operator = "LessThanOrEqualToThreshold"
       evaluation_periods  = 3
-      threshold           = 2
+      threshold           = 0
       namespace           = "AWS/ECS"
       period              = 300
       statistic           = "Average"
@@ -306,7 +306,7 @@ locals {
       alarm_name          = "${v.service_name}_lowmem_alarm"
       comparison_operator = "LessThanOrEqualToThreshold"
       evaluation_periods  = 3
-      threshold           = 2
+      threshold           = 1
       namespace           = "AWS/ECS"
       period              = 300
       statistic           = "Average"
@@ -365,7 +365,7 @@ locals {
       alarm_name          = "${v.service_name}_lowcpu_alarm"
       comparison_operator = "LessThanOrEqualToThreshold"
       evaluation_periods  = 3
-      threshold           = 2
+      threshold           = 0
       namespace           = "AWS/ECS"
       period              = 300
       statistic           = "Average"
@@ -384,7 +384,7 @@ locals {
       alarm_name          = "${v.service_name}_lowmem_alarm"
       comparison_operator = "LessThanOrEqualToThreshold"
       evaluation_periods  = 3
-      threshold           = 2
+      threshold           = 1
       namespace           = "AWS/ECS"
       period              = 300
       statistic           = "Average"
