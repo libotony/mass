@@ -1,0 +1,127 @@
+name: Plan and/or Deploy VeChain Explorer stack
+
+on:
+  # trigger deployment manually
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "The environment to deploy"
+        required: true
+        default: dev
+        type: environment
+      workspace:
+        description: Terraform workspace to use
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      environment:
+        description: Which environment to plan/deploy to
+        required: true
+        default: dev
+        type: string
+      workspace:
+        description: Terraform workspace to use
+        required: true
+        default: dev
+        type: string
+      force:
+        description: Whether to force apply
+        required: false
+        default: false
+        type: boolean
+
+# Required for authentication through GitHub OIDC
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  deploy:
+    name: "Plan/deploy VeChain Explorer to ${{ inputs.workspace }}"
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform/explore
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Determine AWS account ID and role
+        id: account
+        run: |
+            if [ "${{ inputs.environment }}" == "prod" ]; then
+              echo "role_arn=${{ secrets.PROD_AWS_ACC_ROLE }}" >> $GITHUB_OUTPUT
+            else
+              echo "role_arn=${{ secrets.DEV_AWS_ACC_ROLE }}" >> $GITHUB_OUTPUT
+            fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+            aws-region: eu-west-1
+            role-to-assume: ${{ steps.account.outputs.role_arn }}
+
+      # Required for Terraform to source modules from other vechain repositories
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.VECHAINCI_SSH_PRIVATE_KEYS }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.7.3
+          terraform_wrapper: true
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Terraform Initialize
+        id: init
+        run: terraform init -backend-config="../environments/${{ inputs.workspace }}/backend.config"
+
+      - name: Terraform Workspace
+        id: workspace
+        run: terraform workspace select ${{ inputs.workspace }}
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -out "apply.plan"
+
+      - name: Should proceed with deployment? (PR builds will never deploy)
+        if: github.ref == 'refs/heads/main' || inputs.force
+        id: check-env
+        run: |
+          cluster_services=$(aws ecs list-services --cluster ${{ inputs.workspace }}-explore-cluster --query 'length(serviceArns)' --output text)
+          if [ "${{ inputs.force }}" == "true" ]; then
+            echo "Force apply enabled, proceeding with deployment"
+          elif (( $cluster_services > 0 )); then
+            echo "env_exists=true" >> $GITHUB_OUTPUT
+            echo "The ${{ inputs.workspace }} environment exists, proceeding with deployment"
+          else
+            echo "env_exists=false" >> $GITHUB_OUTPUT
+            echo "The ${{ inputs.workspace }} environment doesn't exist. Please create it manually first, or enable force apply"
+          fi
+
+      - name: Terraform Apply
+        if: (github.ref == 'refs/heads/main' && steps.check-env.outputs.env_exists == 'true') || inputs.force
+        id: apply
+        run: terraform apply "apply.plan"
+
+      - name: Slack Notification
+        if: steps.apply.outcome == 'success'
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_MESSAGE: Deployed VeChain Explorer to *${{ inputs.workspace }}* environment
+          SLACK_TITLE: VeChain Explorer Deployment

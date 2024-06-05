@@ -1,0 +1,38 @@
+name: Pull Request - Plan Terraform
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.head_ref || github.ref_name }}-build-test
+  cancel-in-progress: true
+
+jobs:
+  terraform-plan-dev:
+    name: Terraform Plan Dev
+    uses: ./.github/workflows/plan-or-deploy-environment.yml
+    with:
+      environment: dev
+      workspace: dev
+    permissions:
+      packages: read
+      contents: read
+      id-token: write
+    secrets: inherit
+
+  terraform-plan-prod:
+    name: Terraform Plan Prod
+    uses: ./.github/workflows/plan-or-deploy-environment.yml
+    strategy:
+      matrix:
+        color: [blue, green]
+    with:
+      environment: prod
+      workspace: prod-${{ matrix.color }}
+    permissions:
+      packages: read
+      contents: read
+      id-token: write
+    secrets: inherit
