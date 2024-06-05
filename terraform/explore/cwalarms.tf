@@ -122,6 +122,44 @@ locals {
     }
   }
 
+  ecs_service_lowcpu_alarm_explore = {
+    for k, v in module.ecs-lb-service-explore : "${v.service_name}_lowcpu" => {
+      alarm_name          = "${v.service_name}_lowcpu_alarm"
+      comparison_operator = "LessThanOrEqualToThreshold"
+      evaluation_periods  = 3
+      threshold           = 2
+      namespace           = "AWS/ECS"
+      period              = 300
+      statistic           = "Average"
+      metric_name         = "CPUUtilization"
+      alarm_description   = "${v.service_name} low CPU load"
+      dimensions = {
+        ServiceName = v.service_name
+        ClusterName = module.ecs-cluster.name
+      }
+      treat_missing_data = "breaching"
+    }
+  }
+
+  ecs_service_lowmem_alarm_explore = {
+    for k, v in module.ecs-lb-service-explore : "${v.service_name}_lowmem" => {
+      alarm_name          = "${v.service_name}_lowmem_alarm"
+      comparison_operator = "LessThanOrEqualToThreshold"
+      evaluation_periods  = 3
+      threshold           = 2
+      namespace           = "AWS/ECS"
+      period              = 300
+      statistic           = "Average"
+      metric_name         = "MemoryUtilization"
+      alarm_description   = "${v.service_name} low memory consumption"
+      dimensions = {
+        ServiceName = v.service_name
+        ClusterName = module.ecs-cluster.name
+      }
+      treat_missing_data = "breaching"
+    }
+  }
+
   ##############################################################################################################
   # Mass Alarms - Load Balanced ECS Service
   ##############################################################################################################
@@ -244,6 +282,44 @@ locals {
     }
   }
 
+  ecs_service_lowcpu_alarm_mass = {
+    for k, v in module.ecs-lb-service-mass : "${v.service_name}_lowcpu" => {
+      alarm_name          = "${v.service_name}_lowcpu_alarm"
+      comparison_operator = "LessThanOrEqualToThreshold"
+      evaluation_periods  = 3
+      threshold           = 2
+      namespace           = "AWS/ECS"
+      period              = 300
+      statistic           = "Average"
+      metric_name         = "CPUUtilization"
+      alarm_description   = "${v.service_name} low CPU load"
+      dimensions = {
+        ServiceName = v.service_name
+        ClusterName = module.ecs-cluster.name
+      }
+      treat_missing_data = "breaching"
+    }
+  }
+
+  ecs_service_lowmem_alarm_mass = {
+    for k, v in module.ecs-lb-service-mass : "${v.service_name}_lowmem" => {
+      alarm_name          = "${v.service_name}_lowmem_alarm"
+      comparison_operator = "LessThanOrEqualToThreshold"
+      evaluation_periods  = 3
+      threshold           = 2
+      namespace           = "AWS/ECS"
+      period              = 300
+      statistic           = "Average"
+      metric_name         = "MemoryUtilization"
+      alarm_description   = "${v.service_name} low memory consumption"
+      dimensions = {
+        ServiceName = v.service_name
+        ClusterName = module.ecs-cluster.name
+      }
+      treat_missing_data = "breaching"
+    }
+  }
+
   ##############################################################################################################
   # Chain Scanner Alarms - Backend ECS Service
   ##############################################################################################################
@@ -284,10 +360,72 @@ locals {
     }
   }
 
-  ecs_highcpu_alarms = merge(local.ecs_service_highcpu_alarm_explore, local.ecs_service_highcpu_alarm_mass, local.ecs_backend_highcpu_alarm_cs)
-  ecs_highmem_alarms = merge(local.ecs_service_highmem_alarm_explore, local.ecs_service_highmem_alarm_mass, local.ecs_backend_highmem_alarm_cs)
+  ecs_backend_lowcpu_alarm_cs = {
+    for k, v in module.ecs-backend-service-chain-scanner : "${v.service_name}_lowcpu" => {
+      alarm_name          = "${v.service_name}_lowcpu_alarm"
+      comparison_operator = "LessThanOrEqualToThreshold"
+      evaluation_periods  = 3
+      threshold           = 2
+      namespace           = "AWS/ECS"
+      period              = 300
+      statistic           = "Average"
+      metric_name         = "CPUUtilization"
+      alarm_description   = "${v.service_name} low CPU load"
+      dimensions = {
+        ServiceName = v.service_name
+        ClusterName = module.ecs-cluster.name
+      }
+      treat_missing_data = "breaching"
+    }
+  }
 
-  log_metric_alarm = { for k in concat(flatten([for k, v in module.ecs-backend-service-chain-scanner : v.log_metric_names]), flatten([for k, v in module.ecs-lb-service-explore : v.log_metric_names]), flatten([for k, v in module.ecs-lb-service-mass : v.log_metric_names])) : "${k}_lma" => {
+  ecs_backend_lowmem_alarm_cs = {
+    for k, v in module.ecs-backend-service-chain-scanner : "${v.service_name}_lowmem" => {
+      alarm_name          = "${v.service_name}_lowmem_alarm"
+      comparison_operator = "LessThanOrEqualToThreshold"
+      evaluation_periods  = 3
+      threshold           = 2
+      namespace           = "AWS/ECS"
+      period              = 300
+      statistic           = "Average"
+      metric_name         = "MemoryUtilization"
+      alarm_description   = "${v.service_name} low memory consumption"
+      dimensions = {
+        ServiceName = v.service_name
+        ClusterName = module.ecs-cluster.name
+      }
+      treat_missing_data = "breaching"
+    }
+  }
+
+  ecs_highcpu_alarms = merge(
+    local.ecs_service_highcpu_alarm_explore,
+    local.ecs_service_highcpu_alarm_mass,
+    local.ecs_backend_highcpu_alarm_cs
+  )
+
+  ecs_highmem_alarms = merge(
+    local.ecs_service_highmem_alarm_explore,
+    local.ecs_service_highmem_alarm_mass,
+    local.ecs_backend_highmem_alarm_cs
+  )
+
+  ecs_lowcpu_alarms = merge(
+    local.ecs_service_lowcpu_alarm_explore,
+    local.ecs_service_lowcpu_alarm_mass,
+    local.ecs_backend_lowcpu_alarm_cs
+  )
+
+  ecs_lowmem_alarms = merge(
+    local.ecs_service_lowmem_alarm_explore,
+    local.ecs_service_lowmem_alarm_mass,
+    local.ecs_backend_lowmem_alarm_cs
+  )
+
+  log_metric_alarm = { for k in concat(
+    flatten([for k, v in module.ecs-backend-service-chain-scanner : v.log_metric_names]),
+    flatten([for k, v in module.ecs-lb-service-explore : v.log_metric_names]),
+    flatten([for k, v in module.ecs-lb-service-mass : v.log_metric_names])) : "${k}_lma" => {
     alarm_name          = "${k}_logmetric_alarm"
     comparison_operator = "GreaterThanOrEqualToThreshold"
     evaluation_periods  = 1
@@ -314,6 +452,8 @@ locals {
     local.elb_hi_unhealthy_alarm_mass,
     local.ecs_highcpu_alarms,
     local.ecs_highmem_alarms,
+    local.ecs_lowcpu_alarms,
+    local.ecs_lowmem_alarms,
     local.log_metric_alarm,
   )
 }
