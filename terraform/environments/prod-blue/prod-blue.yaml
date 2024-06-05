@@ -106,7 +106,7 @@ networks:
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/mass
       chain-scanner:
-        cpu:                          1024
+        cpu:                          256
         memory:                       2048
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/chain-scanner
@@ -127,7 +127,7 @@ networks:
           transactions:               5000
           transfers:                  5000
       explore:
-        cpu:                          1024
+        cpu:                          512
         memory:                       2048
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/explore
@@ -202,7 +202,7 @@ networks:
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/mass
       chain-scanner:
-        cpu:                          1024
+        cpu:                          256
         memory:                       2048
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/chain-scanner
@@ -224,7 +224,7 @@ networks:
           transactions:               5000
           transfers:                  5000
       explore:
-        cpu:                          1024
+        cpu:                          512
         memory:                       2048
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/explore
