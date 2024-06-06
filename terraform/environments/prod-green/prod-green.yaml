@@ -151,7 +151,6 @@ networks:
         apply_immediately: true
 
 
-  #uncomment following top level label if testnet not required
   test:
     container_commands:                     
       - ["test", "foundation"]
@@ -203,7 +202,7 @@ networks:
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/mass
       chain-scanner:
-        cpu:                          1024
+        cpu:                          256
         memory:                       2048
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              471112836208.dkr.ecr.eu-west-1.amazonaws.com/vechain/chain-scanner
