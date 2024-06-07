@@ -91,11 +91,11 @@ jobs:
         with:
           repository: vechain/${{ inputs.packageName }}
           tag: ${{ inputs.imageTag }}
-          fail_threshold: high
+          fail_threshold: informational
 
-      # - name: On Scan Failure
-      #   if: failure() && steps.docker-scan.outcome == 'failure'
-      #   run: |
-      #     aws ecr batch-delete-image \
-      #       --repository-name vechain/${{ inputs.packageName }} \
-      #       --image-ids imageTag=${{ inputs.imageTag }} imageTag=${{ inputs.latestTag }}
+      - name: On Scan Failure
+        if: failure() && steps.docker-scan.outcome == 'failure'
+        run: |
+          aws ecr batch-delete-image \
+            --repository-name vechain/${{ inputs.packageName }} \
+            --image-ids imageTag=${{ inputs.imageTag }} imageTag=${{ inputs.latestTag }}
