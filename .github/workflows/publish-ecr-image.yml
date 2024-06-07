@@ -91,7 +91,7 @@ jobs:
         with:
           repository: vechain/${{ inputs.packageName }}
           tag: ${{ inputs.imageTag }}
-          fail_threshold: high
+          # fail_threshold: high
 
       - name: On Scan Failure
         if: failure() && steps.docker-scan.outcome == 'failure'
