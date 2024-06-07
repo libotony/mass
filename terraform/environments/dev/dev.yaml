@@ -95,6 +95,7 @@ networks:
       - ["main", "token", "BIGV"]
       - ["main", "token", "SL4Y"]
       - ["main", "token", "cool"]
+      - ["main", "dual-token"]
     common_config:
       thor_url:                       https://mainnet.vechain.org
       thor_rest_url:                  https://mainnet.live.dev.node.vechain.org
