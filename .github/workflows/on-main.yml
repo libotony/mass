@@ -22,6 +22,7 @@ jobs:
       id-token: write
       contents: read
     strategy:
+      fail-fast: false
       matrix:
         env: [dev, prod]
         application: [mass]
