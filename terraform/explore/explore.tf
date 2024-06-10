@@ -148,7 +148,7 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_capacity_provider" {
   capacity_providers = ["FARGATE_SPOT", "FARGATE"]
 
   default_capacity_provider_strategy {
-    base              = 1
+    base              = 0
     weight            = 100
     capacity_provider = "FARGATE_SPOT"
   }
@@ -281,7 +281,7 @@ module "ecs-lb-service-mass" {
 module "ecs-backend-service-chain-scanner" {
   depends_on       = [module.ecs-cluster]
   for_each         = {for config_obj in local.container_commands : config_obj.index => config_obj}
-  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.30"
+  source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.33"
   vpc_id           = local.env.vpc_id
   region           = local.env.region
   cluster          = module.ecs-cluster.name
@@ -301,7 +301,12 @@ module "ecs-backend-service-chain-scanner" {
   desired_capacity = "1"
   containerPort    = 8080
   hostPort         = 8080
+  launch_type      = "omit"
   namespace_id     = aws_service_discovery_private_dns_namespace.ns.id
+  runtime_platform = [{
+    operating_system_family = "LINUX",
+    cpu_architecture        = "X86_64"
+  }]
   log_metric_filters = [
     {
       name    = "AppUnhealthy"
