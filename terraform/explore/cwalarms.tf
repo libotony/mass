@@ -472,8 +472,8 @@ module "cloud_watch_alarms" {
   create_slack_integration = true
   configuration_name       = substr("${local.env.environment}-${var.project}", 0, 28)
 
-  slack_channel_id   = terraform.workspace == "dev" ? null : local.env.slack_alert_channel
-  slack_workspace_id = terraform.workspace == "dev" ? null : local.env.slack_alert_workspace
+  slack_channel_id   = local.env.slack_alert_channel
+  slack_workspace_id = local.env.slack_alert_workspace
 
   simple_alarms     = local.simple_alarms_map
   expression_alarms = local.expression_alarms_map
