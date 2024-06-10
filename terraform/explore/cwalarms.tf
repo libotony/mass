@@ -465,11 +465,11 @@ locals {
 }
 
 module "cloud_watch_alarms" {
-  source                   = "git::git@github.com:/vechainfoundation/terraform_infrastructure_modules.git//cloudwatchalarm?ref=v.1.0.2"
+  source                   = "git::git@github.com:/vechainfoundation/terraform_infrastructure_modules.git//cloudwatchalarm?ref=v.1.0.32"
   sns_topic_enabled        = true
   topic_name               = "${local.env.environment}-CloudWatchAlarms"
   email_subscriptions      = []
-  create_slack_integration = local.env.environment == "dev" ? false : true
+  create_slack_integration = true
   configuration_name       = substr("${local.env.environment}-${var.project}", 0, 28)
 
   slack_channel_id   = terraform.workspace == "dev" ? null : local.env.slack_alert_channel
