@@ -148,7 +148,7 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_capacity_provider" {
   capacity_providers = ["FARGATE_SPOT", "FARGATE"]
 
   default_capacity_provider_strategy {
-    base              = 1
+    base              = 0
     weight            = 100
     capacity_provider = "FARGATE_SPOT"
   }
@@ -301,7 +301,12 @@ module "ecs-backend-service-chain-scanner" {
   desired_capacity = "1"
   containerPort    = 8080
   hostPort         = 8080
+  launch_type      = "omit"
   namespace_id     = aws_service_discovery_private_dns_namespace.ns.id
+  runtime_platform = [{
+    operating_system_family = "LINUX",
+    cpu_architecture        = "X86_64"
+  }]
   log_metric_filters = [
     {
       name    = "AppUnhealthy"
