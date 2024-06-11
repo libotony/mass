@@ -108,7 +108,7 @@ networks:
         ecr_common_repo:              891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/mass
       chain-scanner:
         cpu:                          512
-        memory:                       512
+        memory:                       1024
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/chain-scanner"
         start_block:
@@ -204,8 +204,8 @@ networks:
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/mass
       chain-scanner:
-        cpu:                          256
-        memory:                       512
+        cpu:                          512
+        memory:                       1024
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
         ecr_common_repo:              "891377394468.dkr.ecr.eu-west-1.amazonaws.com/vechain/chain-scanner"
         #slack_webhook_url:            ""
