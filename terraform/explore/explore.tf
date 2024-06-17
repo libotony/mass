@@ -285,7 +285,7 @@ module "ecs-backend-service-chain-scanner" {
   vpc_id           = local.env.vpc_id
   region           = local.env.region
   cluster          = module.ecs-cluster.name
-  subnets          = concat(local.env.public_subnets, local.env.private_subnets)
+  subnets          = concat(local.env.private_subnets)
   env              = local.env.environment
   is_create_repo   = false
   ecr_repo_uri     = each.value.common_config.chain-scanner.ecr_common_repo
