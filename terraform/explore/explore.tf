@@ -303,6 +303,8 @@ module "ecs-backend-service-chain-scanner" {
   hostPort         = 8080
   launch_type      = "omit"
   namespace_id     = aws_service_discovery_private_dns_namespace.ns.id
+  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 100
   runtime_platform = [{
     operating_system_family = "LINUX",
     cpu_architecture        = "X86_64"
