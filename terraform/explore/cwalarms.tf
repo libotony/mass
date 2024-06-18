@@ -36,22 +36,6 @@ locals {
     }
   }
 
-  elb_connect_rate_alarm_explore = { for k, v in module.ecs-lb-service-explore : "${v.service_name}_hi_conn" => {
-    alarm_name          = "${v.service_name}_connect_rate_alarm"
-    comparison_operator = "GreaterThanOrEqualToThreshold"
-    evaluation_periods  = 3
-    threshold           = 100
-    namespace           = "AWS/ApplicationELB"
-    period              = 180
-    statistic           = "Average"
-    metric_name         = "NewConnectionCount"
-    alarm_description   = "ELB connection rate"
-    dimensions = {
-      LoadBalancer = substr(split(":", v.alb_arn)[5], 13, -1)
-    }
-    }
-  }
-
   elb_low_health_alarm_explore = { for k, v in module.ecs-lb-service-explore : "${v.service_name}_lo_h" => {
     alarm_name          = "${v.service_name}_low_health_alarm"
     comparison_operator = "LessThanThreshold"
@@ -190,22 +174,6 @@ locals {
     statistic           = "Average"
     metric_name         = "HTTPCode_ELB_5XX_Count"
     alarm_description   = "ELB 5XX error count"
-    dimensions = {
-      LoadBalancer = substr(split(":", v.alb_arn)[5], 13, -1)
-    }
-    }
-  }
-
-  elb_connect_rate_alarm_mass = { for k, v in module.ecs-lb-service-mass : "${v.service_name}_hi_conn" => {
-    alarm_name          = "${v.service_name}_connect_rate_alarm"
-    comparison_operator = "GreaterThanOrEqualToThreshold"
-    evaluation_periods  = 3
-    threshold           = 100
-    namespace           = "AWS/ApplicationELB"
-    period              = 180
-    statistic           = "Average"
-    metric_name         = "NewConnectionCount"
-    alarm_description   = "ELB connection rate"
     dimensions = {
       LoadBalancer = substr(split(":", v.alb_arn)[5], 13, -1)
     }
