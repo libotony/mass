@@ -410,12 +410,10 @@ locals {
   simple_alarms_map = merge(
     local.elb_response_alarm_explore,
     local.elb_5xx_count_alarm_explore,
-    local.elb_connect_rate_alarm_explore,
     local.elb_low_health_alarm_explore,
     local.elb_hi_unhealthy_alarm_explore,
     local.elb_response_alarm_mass,
     local.elb_5xx_count_alarm_mass,
-    local.elb_connect_rate_alarm_mass,
     local.elb_low_health_alarm_mass,
     local.elb_hi_unhealthy_alarm_mass,
     local.ecs_highcpu_alarms,
