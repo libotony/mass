@@ -48,6 +48,7 @@ module "rds" {
 
 # EC2 instance to initialize the secondary 'mass' database
 resource "aws_instance" "db_initializer" {
+  depends_on = [ module.rds ]
   for_each                    = local.env.networks
   ami                         = "ami-04fe22dfadec6f0b6"
   iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
