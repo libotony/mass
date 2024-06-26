@@ -81,7 +81,7 @@ resource "aws_instance" "db_initializer" {
 }
 
 resource "aws_iam_role" "ssm_role" {
-  name = "ssm-role"
+  name = "${local.env.environment}-ssm-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -103,6 +103,6 @@ resource "aws_iam_role_policy_attachment" "ssm_role_policy" {
 
 # Create an instance profile
 resource "aws_iam_instance_profile" "ssm_instance_profile" {
-  name = "ssm-instance-profile"
+  name = "${local.env.environment}-ssm-instance-profile"
   role = aws_iam_role.ssm_role.name
 }
