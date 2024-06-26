@@ -3,3 +3,5 @@ project:     vechain
 environment: prod
 application: explore
 root_domain: vechain.org
+slack_channel_id:             C074MFLD2CW
+slack_workspace_id:           T03L3PQD8GK

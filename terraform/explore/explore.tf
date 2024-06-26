@@ -159,7 +159,7 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_capacity_provider" {
 ################################################################################
 
 module "ecs-lb-service-mass" {
-  depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
+  depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg, module.rds]
   for_each                   = local.env.networks
   source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.34"
   region                     = local.env.region
@@ -301,7 +301,8 @@ module "ecs-backend-service-chain-scanner" {
   desired_capacity = "1"
   containerPort    = 8080
   hostPort         = 8080
-  launch_type      = "omit"
+  # 'omit' below allows ECS to schedule tasks according to capacity providers ie FARGATE_SPOT
+  launch_type      = local.env.environment == "dev" ? "omit" : "FARGATE"
   namespace_id     = aws_service_discovery_private_dns_namespace.ns.id
   deployment_minimum_healthy_percent = 0
   deployment_maximum_percent         = 100
