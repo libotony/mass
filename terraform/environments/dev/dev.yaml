@@ -193,6 +193,7 @@ networks:
       - ["test", "token", "VOT3"]
       - ["test", "token", "B3TR"]
       - ["test", "token", "COJ"]
+      - ["test", "dual-token"]
     common_config:
       thor_url:                       https://testnet.vechain.org
       thor_rest_url:                  https://testnet.live.dev.node.vechain.org
