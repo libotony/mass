@@ -24,6 +24,10 @@ locals {
   ])
 }
 
+data "aws_ssm_parameter" "captcha_secret" {
+  name = startswith(local.env.environment, "prod") ? "/prod/explorer/captcha_secret" : "/${local.env.environment}/explorer/captcha_secret"
+}
+
 ######################
 # Public ALB Security Group
 ######################
@@ -508,7 +512,7 @@ module "ecs-lb-service-explore" {
     },
     {
       name  = "CAPTCHA_SECRET"
-      value = "CAPTCHA_SECRET"
+      value = data.aws_ssm_parameter.captcha_secret.value
     },
   ]
 }
