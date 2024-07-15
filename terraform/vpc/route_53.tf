@@ -13,11 +13,11 @@ variable "live_color" {
 locals {
   dev_mainnet_lb = terraform.workspace == "dev" ? try(data.terraform_remote_state.explore-dev[0].outputs.load_balancer_domain_mainnet, "placeholder1") : "placeholder"
   dev_testnet_lb = terraform.workspace == "dev" ? try(data.terraform_remote_state.explore-dev[0].outputs.load_balancer_domain_testnet, "placeholder1") : "placeholder"
-  live_mainnet_lb = terraform.workspace == "prod" ? var.live_color == "blue" ? data.terraform_remote_state.explore-blue[0].outputs.load_balancer_domain_mainnet : data.terraform_remote_state.explore-green[0].outputs.load_balancer_domain_mainnet : ""
-  live_testnet_lb = terraform.workspace == "prod" ? var.live_color == "blue" ? data.terraform_remote_state.explore-blue[0].outputs.load_balancer_domain_testnet : data.terraform_remote_state.explore-green[0].outputs.load_balancer_domain_testnet : ""
+  live_mainnet_lb = terraform.workspace == "prod" ? var.live_color == "blue" ? try(data.terraform_remote_state.explore-blue[0].outputs.load_balancer_domain_mainnet, "placeholder") : try(data.terraform_remote_state.explore-green[0].outputs.load_balancer_domain_mainnet, "placeholder") : ""
+  live_testnet_lb = terraform.workspace == "prod" ? var.live_color == "blue" ? try(data.terraform_remote_state.explore-blue[0].outputs.load_balancer_domain_testnet, "placeholder") : try(data.terraform_remote_state.explore-green[0].outputs.load_balancer_domain_testnet, "placeholder") : ""
   # If the dead environment has been torn down, dead records will be nullified
-  dead_mainnet_lb = terraform.workspace == "prod" ? var.live_color == "blue" ? try(data.terraform_remote_state.explore-green[0].outputs.load_balancer_domain_mainnet, "place.holder.domain") : data.terraform_remote_state.explore-blue[0].outputs.load_balancer_domain_mainnet : ""
-  dead_testnet_lb = terraform.workspace == "prod" ? var.live_color == "blue" ? try(data.terraform_remote_state.explore-green[0].outputs.load_balancer_domain_testnet, "place.holder.domain") : data.terraform_remote_state.explore-blue[0].outputs.load_balancer_domain_testnet : ""
+  dead_mainnet_lb = terraform.workspace == "prod" ? var.live_color == "blue" ? try(data.terraform_remote_state.explore-green[0].outputs.load_balancer_domain_mainnet, "place.holder.domain") : try(data.terraform_remote_state.explore-blue[0].outputs.load_balancer_domain_mainnet, "placeholder") : ""
+  dead_testnet_lb = terraform.workspace == "prod" ? var.live_color == "blue" ? try(data.terraform_remote_state.explore-green[0].outputs.load_balancer_domain_testnet, "place.holder.domain") : try(data.terraform_remote_state.explore-blue[0].outputs.load_balancer_domain_testnet, "placeholder") : ""
 }
 
 ################################################################################
