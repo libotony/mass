@@ -3,11 +3,6 @@ output "explore_public_zone_id" {
     value = aws_route53_zone.explore_public_zone.id
 }
 
-output "certificate_arn" {
-    description = "The ARN of the certificate for the explore application"
-    value = module.domain.certificate_arn
-}
-
 output "chatbot_sns_topic_name" {
   description = "The name of the chatbot/slack SNS topic"
   value       = aws_sns_topic.chatbot_sns_topic.name
