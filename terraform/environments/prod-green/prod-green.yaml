@@ -4,7 +4,7 @@ application:                     explore
 project:                         vechain
 root_domain:                     vechain.org
 environment:                     prod-green
-certificate_arn:                 
+certificate_arn:                 arn:aws:acm:eu-west-1:471112836208:certificate/081f365b-a677-4b75-8502-d70ccd981f87
 azs:
   -                              eu-west-1a
   -                              eu-west-1b

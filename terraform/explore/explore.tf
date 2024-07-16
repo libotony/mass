@@ -185,7 +185,7 @@ module "ecs-lb-service-mass" {
   memory                     = each.value.common_config.mass.memory
   cidr                       = local.env.cidr
   container_port             = 8080
-  certificate_arn            = data.terraform_remote_state.vpc.outputs.certificate_arn
+  certificate_arn            = local.env.certificate_arn
   ecs_sg                     = [aws_security_group.ecs_service_sg.id]
   rule_0_path_pattern        = ["/api/v*", "/api-docs", "/swagger-ui/*"]
   alb_sg                     = [aws_security_group.internal-alb-sg.id]
@@ -462,7 +462,7 @@ module "ecs-lb-service-explore" {
   memory                     = each.value.common_config.explore.memory
   cidr                       = local.env.cidr
   container_port             = 8080
-  certificate_arn            = data.terraform_remote_state.vpc.outputs.certificate_arn
+  certificate_arn            = local.env.certificate_arn
   ecs_sg                     = [aws_security_group.ecs_service_sg.id]
   rule_0_path_pattern        = ["/api/v*", "/api-docs", "/swagger-ui/*"]
   alb_sg                     = [aws_security_group.alb-sg.id]
