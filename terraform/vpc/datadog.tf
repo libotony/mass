@@ -1,4 +1,5 @@
 module "datadog_integration_aws" {
+  count               = terraform.workspace == "prod" ? 1 : 0
   source              = "git::git@github.com:vechain/terraform_infrastructure_modules.git//datadog?ref=v.1.0.47"
   project_name        = "explore-prod"
   role_name           = "DatadogAWSIntegrationRole"
