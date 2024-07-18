@@ -32,6 +32,7 @@ database_subnets:
 cloudwatch_alarms:               true
 slack_channel_id:             C074MFLD2CW
 slack_workspace_id:           T03L3PQD8GK
+datadog_secret_arn:              null
 
 networks:
   main:

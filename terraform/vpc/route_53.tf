@@ -21,6 +21,23 @@ locals {
 }
 
 ################################################################################
+# Domain & Certificate creation
+################################################################################
+data "aws_lb_hosted_zone_id" "current" {}
+locals {
+  domains = [
+    { name : "*.${local.env.environment}.${local.env.application}.${local.env.root_domain}", zone : aws_route53_zone.explore_public_zone.id },
+  ]
+}
+
+module "domain" {
+  source      = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//domains?ref=v.1.0.26"
+  count       = terraform.workspace == "dev" ? 1 : 0
+  domain_name = local.domains[0].name
+  zone_id     = local.domains[0].zone
+}
+
+################################################################################
 # Hosted Zone & DNS Record creation
 ################################################################################
 resource "aws_route53_zone" "explore_public_zone" {
