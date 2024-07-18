@@ -1,6 +1,6 @@
 module "datadog_integration_aws" {
-  count               = terraform.workspace == "prod" ? 1 : 0
-  source              = "git::git@github.com:vechain/terraform_infrastructure_modules.git//datadog?ref=v.1.0.47"
+  source              = "git::git@github.com:vechain/terraform_infrastructure_modules.git//datadog?ref=v.1.0.50"
+  enable_datadog_integration_aws = terraform.workspace == "prod" ? true : false
   project_name        = "explore-prod"
   role_name           = "DatadogAWSIntegrationRole"
   aws_permissions_list = [
@@ -46,9 +46,8 @@ module "datadog_integration_aws" {
   filter_tags          = []
   host_tags            = ["project:${var.project}"]
   excluded_regions     = ["us-east-2, us-west-1, us-west-2, ca-central-1, eu-west-2, eu-west-3, eu-central-1, eu-north-1, ap-south-1, ap-northeast-1, ap-northeast-2, ap-southeast-1, ap-southeast-2, sa-east-1"]
-  secret_id             = "arn:aws:secretsmanager:eu-west-1:471112836208:secret:datadog_keys-AdkCpW"
+  secret_id             = local.env.datadog_secret_arn
 
-  datadog_integration_aws    = true
   create_api_gateway_group   = false
   create_ecs_group           = true
   create_elb_group           = true
@@ -57,9 +56,9 @@ module "datadog_integration_aws" {
   create_cloudfront_group    = false
   create_dynamodb_group      = false
   create_monitor             = false 
-  create_synthetics_monitor  = true
   create_custom_widget_group = false
-  create_dynamic_dashboard   = true
+  create_synthetics_monitor  = terraform.workspace == "prod" ? true : false
+  create_dynamic_dashboard   = terraform.workspace == "prod" ? true : false
 
   monitors = {
   }
