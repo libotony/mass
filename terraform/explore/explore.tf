@@ -466,6 +466,7 @@ module "ecs-lb-service-explore" {
   ecs_sg                     = [aws_security_group.ecs_service_sg.id]
   rule_0_path_pattern        = ["/api/v*", "/api-docs", "/swagger-ui/*"]
   alb_sg                     = [aws_security_group.alb-sg.id]
+  idle_timeout               = 40
   enable_deletion_protection = startswith(local.env.environment, "prod") ? true : false
   namespace_id               = aws_service_discovery_private_dns_namespace.ns.id
   https_tg_healthcheck_path  = "/favicon.png"
