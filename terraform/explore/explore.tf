@@ -258,6 +258,10 @@ module "ecs-lb-service-mass" {
       name  = "NODE_ENV"
       value = "production"
     },
+    {
+      name = "KEEP_ALIVE_TIMEOUT"
+      value = "60"
+    }
   ]
   log_metric_filters = [
     {
