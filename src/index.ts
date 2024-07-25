@@ -19,7 +19,9 @@ app.set('port', port)
  */
 
 const server = http.createServer(app)
-
+if (process.env.KEEP_ALIVE_TIMEOUT) {
+    server.keepAliveTimeout = parseInt(process.env.KEEP_ALIVE_TIMEOUT)*1000
+}
 /**
  * Listen on provided port, on all network interfaces.
  */
