@@ -520,5 +520,9 @@ module "ecs-lb-service-explore" {
       name  = "CAPTCHA_SECRET"
       value = data.aws_ssm_parameter.captcha_secret.value
     },
+    {
+      name = "KEEP_ALIVE_TIMEOUT"
+      value = "60"
+    }
   ]
 }
