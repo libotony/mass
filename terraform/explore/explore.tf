@@ -448,7 +448,7 @@ module "ecs-backend-service-chain-scanner" {
 module "ecs-lb-service-explore" {
   depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
   for_each                   = local.env.networks
-  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.34"
+  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=Add-HTTP-client-keepalive-var-to-ecs-ALB"
   vpc_id                     = local.env.vpc_id
   region                     = local.env.region
   cluster_name               = module.ecs-cluster.name
@@ -472,6 +472,7 @@ module "ecs-lb-service-explore" {
   rule_0_path_pattern        = ["/api/v*", "/api-docs", "/swagger-ui/*"]
   alb_sg                     = [aws_security_group.alb-sg.id]
   idle_timeout               = 40
+  client_keep_alive          = 60
   enable_deletion_protection = startswith(local.env.environment, "prod") ? true : false
   namespace_id               = aws_service_discovery_private_dns_namespace.ns.id
   https_tg_healthcheck_path  = "/favicon.png"
