@@ -98,8 +98,8 @@ networks:
       thor_url:                       https://mainnet.vechain.org
       thor_rest_url:                  https://mainnet.live.prod.node.vechain.org
       mass:
-        cpu:                          256
-        memory:                       512
+        cpu:                          1024
+        memory:                       2048
         min_capacity:                 1
         max_capacity:                 4
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
