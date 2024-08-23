@@ -63,20 +63,5 @@ module "datadog_integration_aws" {
   monitors = {
   }
 
-  synthetics_monitors = {
-    monitor_1 = {
-    synthetics_monitor_name               = "Status for explore-testnet.vechain.org/"
-    synthetics_monitor_message            =  "Notifying @slack-explorer-alerts \n\n{{#is_alert}}\nhttps://explore-testnet.vechain.org/ is down.\n{{/is_alert}}\n\n{{#is_recovery}}\nhttps://explore-testnet.vechain.org/ has recovered.\n{{/is_recovery}}\n\n\n\n"
-    synthetics_monitor_locations          = ["aws:eu-central-1", "aws:eu-north-1", "aws:eu-south-1", "aws:eu-west-1", "aws:eu-west-2", "aws:eu-west-3"]
-    synthetics_monitor_url                = "https://explore-testnet.vechain.org"
-    synthetics_monitor_tags               = ["team:explore"]
-    },
-    monitor_2 = {
-    synthetics_monitor_name               = "Status for explore.vechain.org/"
-    synthetics_monitor_message            =  "Notifying @slack-explorer-alerts \n\n{{#is_alert}}\nhttps://explore.vechain.org/ is down.\n{{/is_alert}}\n\n{{#is_recovery}}\nhttps://explore.vechain.org/ has recovered.\n{{/is_recovery}}\n\n\n\n"
-    synthetics_monitor_locations          = ["aws:eu-central-1", "aws:eu-north-1", "aws:eu-south-1", "aws:eu-west-1", "aws:eu-west-2", "aws:eu-west-3"]
-    synthetics_monitor_url                = "https://explore.vechain.org"
-    synthetics_monitor_tags               = ["team:explore"]
-    }
-  }
+  synthetics_monitors = {}
 }
