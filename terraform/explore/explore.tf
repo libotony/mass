@@ -134,11 +134,12 @@ resource "aws_security_group" "ecs_service_sg" {
 
 module "ecs-cluster" {
   # temporary filter to avoid deployment of new ECS cluster from original prod workspace
-  source  = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs_cluster?ref=v.1.0.34"
-  env     = local.env.environment
-  project = var.project
-  vpc_id  = local.env.vpc_id
-  cidr    = local.env.cidr
+  source                    = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs_cluster?ref=v.1.3.1"
+  env                       = local.env.environment
+  project                   = var.project
+  vpc_id                    = local.env.vpc_id
+  cidr                      = local.env.cidr
+  enable_container_insights = false
 }
 
 ################################################################################
@@ -146,7 +147,7 @@ module "ecs-cluster" {
 ################################################################################
 
 resource "aws_ecs_cluster_capacity_providers" "ecs_capacity_provider" {
-  count = local.env.environment == "dev" ? 1 : 0
+  count        = local.env.environment == "dev" ? 1 : 0
   cluster_name = module.ecs-cluster.name
 
   capacity_providers = ["FARGATE_SPOT", "FARGATE"]
@@ -261,7 +262,7 @@ module "ecs-lb-service-mass" {
       value = "production"
     },
     {
-      name = "KEEP_ALIVE_TIMEOUT"
+      name  = "KEEP_ALIVE_TIMEOUT"
       value = "60"
     }
   ]
@@ -291,7 +292,7 @@ module "ecs-lb-service-mass" {
 ################################################################################
 module "ecs-backend-service-chain-scanner" {
   depends_on       = [module.ecs-cluster]
-  for_each         = {for config_obj in local.container_commands : config_obj.index => config_obj}
+  for_each         = { for config_obj in local.container_commands : config_obj.index => config_obj }
   source           = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-backend-service?ref=v.1.0.35"
   vpc_id           = local.env.vpc_id
   region           = local.env.region
@@ -303,7 +304,7 @@ module "ecs-backend-service-chain-scanner" {
   secrets_enable   = false
   ecr_image_tag    = local.env.image_tag
   command          = each.value.command
-  app_name         = "${each.value.network}-chain-scanner-${each.value.command[length(each.value.command) -1]}"
+  app_name         = "${each.value.network}-chain-scanner-${each.value.command[length(each.value.command) - 1]}"
   project          = var.project
   cpu              = each.value.common_config.chain-scanner.cpu
   memory           = each.value.common_config.chain-scanner.memory
@@ -313,8 +314,8 @@ module "ecs-backend-service-chain-scanner" {
   containerPort    = 8080
   hostPort         = 8080
   # 'omit' below allows ECS to schedule tasks according to capacity providers ie FARGATE_SPOT
-  launch_type      = local.env.environment == "dev" ? "omit" : "FARGATE"
-  namespace_id     = aws_service_discovery_private_dns_namespace.ns.id
+  launch_type                        = local.env.environment == "dev" ? "omit" : "FARGATE"
+  namespace_id                       = aws_service_discovery_private_dns_namespace.ns.id
   deployment_minimum_healthy_percent = 0
   deployment_maximum_percent         = 100
   runtime_platform = [{
@@ -448,38 +449,38 @@ module "ecs-backend-service-chain-scanner" {
 # Module For ECS Non-Load Balanced Service explore
 ################################################################################
 module "ecs-lb-service-explore" {
-  depends_on                 = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
-  for_each                   = local.env.networks
-  source                     = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.69"
-  vpc_id                     = local.env.vpc_id
-  region                     = local.env.region
-  cluster_name               = module.ecs-cluster.name
-  autoscale_cluster_name     = module.ecs-cluster.name
-  lb_subnets                 = local.env.public_subnets
-  app_subnets                = local.env.private_subnets
-  env                        = local.env.environment
-  is_create_repo             = false
-  ecr_repo_uri               = each.value.common_config.explore.ecr_common_repo
-  ssl_policy                 = "ELBSecurityPolicy-TLS-1-2-2017-01"
-  secrets_enable             = false
-  assign_public_ip           = false
-  app_name                   = "${each.key}-explore"
-  ecr_image_tag              = local.env.image_tag
-  project                    = var.project
-  cpu                        = each.value.common_config.explore.cpu
-  memory                     = each.value.common_config.explore.memory
-  cidr                       = local.env.cidr
-  container_port             = 8080
-  certificate_arn            = local.env.certificate_arn
-  ecs_sg                     = [aws_security_group.ecs_service_sg.id]
-  rule_0_path_pattern        = ["/api/v*", "/api-docs", "/swagger-ui/*"]
-  alb_sg                     = [aws_security_group.alb-sg.id]
-  idle_timeout               = 40
-  client_keep_alive          = 60
-  enable_deletion_protection = startswith(local.env.environment, "prod") ? true : false
-  namespace_id               = aws_service_discovery_private_dns_namespace.ns.id
-  https_tg_healthcheck_path  = "/favicon.png"
-  https_tg_healthcheck_timeout = 30
+  depends_on                    = [module.ecs-cluster, resource.aws_security_group.ecs_service_sg, resource.aws_security_group.alb-sg]
+  for_each                      = local.env.networks
+  source                        = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs-loadbalanced-webservice?ref=v.1.0.69"
+  vpc_id                        = local.env.vpc_id
+  region                        = local.env.region
+  cluster_name                  = module.ecs-cluster.name
+  autoscale_cluster_name        = module.ecs-cluster.name
+  lb_subnets                    = local.env.public_subnets
+  app_subnets                   = local.env.private_subnets
+  env                           = local.env.environment
+  is_create_repo                = false
+  ecr_repo_uri                  = each.value.common_config.explore.ecr_common_repo
+  ssl_policy                    = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  secrets_enable                = false
+  assign_public_ip              = false
+  app_name                      = "${each.key}-explore"
+  ecr_image_tag                 = local.env.image_tag
+  project                       = var.project
+  cpu                           = each.value.common_config.explore.cpu
+  memory                        = each.value.common_config.explore.memory
+  cidr                          = local.env.cidr
+  container_port                = 8080
+  certificate_arn               = local.env.certificate_arn
+  ecs_sg                        = [aws_security_group.ecs_service_sg.id]
+  rule_0_path_pattern           = ["/api/v*", "/api-docs", "/swagger-ui/*"]
+  alb_sg                        = [aws_security_group.alb-sg.id]
+  idle_timeout                  = 40
+  client_keep_alive             = 60
+  enable_deletion_protection    = startswith(local.env.environment, "prod") ? true : false
+  namespace_id                  = aws_service_discovery_private_dns_namespace.ns.id
+  https_tg_healthcheck_path     = "/favicon.png"
+  https_tg_healthcheck_timeout  = 30
   https_tg_healthcheck_interval = 45
   log_metric_filters = [
     {
@@ -525,7 +526,7 @@ module "ecs-lb-service-explore" {
       value = data.aws_ssm_parameter.captcha_secret.value
     },
     {
-      name = "KEEP_ALIVE_TIMEOUT"
+      name  = "KEEP_ALIVE_TIMEOUT"
       value = "60"
     }
   ]
