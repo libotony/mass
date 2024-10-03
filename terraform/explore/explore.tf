@@ -134,7 +134,7 @@ resource "aws_security_group" "ecs_service_sg" {
 
 module "ecs-cluster" {
   # temporary filter to avoid deployment of new ECS cluster from original prod workspace
-  source                    = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs_cluster?ref=v.1.3.1"
+  source                    = "git::git@github.com:/vechain/terraform_infrastructure_modules.git//ecs_cluster?ref=v.1.3.2"
   env                       = local.env.environment
   project                   = var.project
   vpc_id                    = local.env.vpc_id
