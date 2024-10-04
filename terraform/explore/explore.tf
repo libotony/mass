@@ -251,7 +251,7 @@ module "ecs-lb-service-mass" {
     },
     {
       name  = "THOR_REST"
-      value = each.value.common_config.thor_rest_url
+      value = each.value.common_config.thor_url
     },
     {
       name  = "NETWORK"
@@ -436,7 +436,7 @@ module "ecs-backend-service-chain-scanner" {
     },
     {
       name  = "THOR_REST"
-      value = each.value.common_config.thor_rest_url
+      value = each.value.common_config.thor_url
     },
     {
       name  = "TYPEORM_MIGRATIONS"
