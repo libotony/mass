@@ -97,8 +97,8 @@ networks:
     common_config:
       thor_url:                       https://mainnet.vechain.org
       mass:
-        cpu:                          512 #1024
-        memory:                       1024 #2048
+        cpu:                          1024
+        memory:                       2048
         min_capacity:                 1
         max_capacity:                 4
         spring_profile:               blocks,accounts,chain,export,index,transactions,transfer,registry
