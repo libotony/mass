@@ -1,5 +1,8 @@
 # Mass
 
+![Scorecard badge](https://github.com/vechain/mass/blob/feature/scorecard-action/.assets/scorecard-badge.svg)
+![Security Checks Badge](https://github.com/vechain/mass/actions/workflows/security-checks.yml/badge.svg)
+
 Backend of VeChain Official [Explorer](https://explore.vechain.org).
 
 ## API
