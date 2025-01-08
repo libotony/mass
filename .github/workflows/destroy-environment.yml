@@ -77,18 +77,23 @@ jobs:
       - name: "Destroy LB Logs S3 Buckets"
         run: |
           echo "Deleting LB logs S3 buckets..."
-          aws s3 rb s3://${{ env.dead_color }}-explore-main-explore-ecs-lb-bucket --force
-          aws s3 rb s3://${{ env.dead_color }}-explore-test-explore-ecs-lb-bucket --force
-          aws s3 rb s3://${{ env.dead_color }}-explore-main-mass-ecs-lb-bucket --force
-          aws s3 rb s3://${{ env.dead_color }}-explore-test-mass-ecs-lb-bucket --force
+          buckets=("s3://${{ env.dead_color }}-explore-main-explore-ecs-lb-bucket" "s3://${{ env.dead_color }}-explore-test-explore-ecs-lb-bucket" "s3://${{ env.dead_color }}-explore-main-mass-ecs-lb-bucket" "s3://${{ env.dead_color }}-explore-test-mass-ecs-lb-bucket")
+          for bucket in "${buckets[@]}"; do
+            if aws s3 ls "$bucket" 2>&1 | grep -q 'NoSuchBucket'; then
+              echo "Bucket $bucket not found, skipping."
+            else
+              echo "Bucket $bucket found, deleting..."
+              aws s3 rb "$bucket" --force
+            fi
+          done
 
       - name: "Destroy Load Balancers"
         run: |
           echo "Fetching load balancer ARNs..."
           dead_main_mass_lb_arn=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?contains(LoadBalancerName, '${{ env.dead_color }}-main-mass-explore-alb')].LoadBalancerArn" --output text)
           dead_test_mass_lb_arn=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?contains(LoadBalancerName, '${{ env.dead_color }}-test-mass-explore-alb')].LoadBalancerArn" --output text)
-          dead_main_explore_lb_arn=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?contains(LoadBalancerName, '${{ env.dead_color }}-main-explore-explore-x')].LoadBalancerArn" --output text)
-          dead_test_explore_lb_arn=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?contains(LoadBalancerName, '${{ env.dead_color }}-test-explore-explore-x')].LoadBalancerArn" --output text)
+          dead_main_explore_lb_arn=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?contains(LoadBalancerName, '${{ env.dead_color }}-main-explore-explor-x')].LoadBalancerArn" --output text)
+          dead_test_explore_lb_arn=$(aws elbv2 describe-load-balancers --query "LoadBalancers[?contains(LoadBalancerName, '${{ env.dead_color }}-test-explore-explor-x')].LoadBalancerArn" --output text)
 
           echo "Disabling deletion protection for load balancers..."
           aws elbv2 modify-load-balancer-attributes --load-balancer-arn $dead_main_mass_lb_arn --attributes Key=deletion_protection.enabled,Value=false
