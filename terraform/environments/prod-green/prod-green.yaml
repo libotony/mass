@@ -135,7 +135,7 @@ networks:
         db_port: 3306
         allocated_storage: 2000
         engine: mysql
-        engine_version: 8.0.36
+        engine_version: 8.0.40
         instance_class: db.t3.small
         app_name: explore
         deletion_protection: false
