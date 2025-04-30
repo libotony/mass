@@ -8,8 +8,12 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig.json ./
 COPY src ./src
+COPY ecosystem.config.js ./
 
 ENV PORT=8080
+
+# Install PM2 globally
+RUN npm install -g pm2
 
 # Install dependencies
 RUN npm ci
@@ -21,4 +25,4 @@ RUN npm run build
 EXPOSE ${PORT}
 
 # Command to run the application
-CMD ["npm", "start"]
+CMD ["pm2-runtime", "ecosystem.config.js"]
