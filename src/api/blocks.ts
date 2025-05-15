@@ -82,10 +82,13 @@ router.get('/:blockid/transactions', try$(async (req, res) => {
                 const tx = x.transaction
                 return {
                     txID: x.txID,
+                    type: tx.type,
                     chainTag: tx.chainTag,
                     blockRef: tx.blockRef,
                     expiration: tx.expiration,
                     gasPriceCoef: tx.gasPriceCoef,
+                    maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
+                    maxFeePerGas: tx.maxFeePerGas,
                     gas: tx.gas,
                     nonce: tx.nonce,
                     dependsOn: tx.dependsOn,
@@ -110,10 +113,13 @@ router.get('/:blockid/transactions', try$(async (req, res) => {
             txs: raw.map(tx => {
                 return {
                     txID: tx.txID,
+                    type: tx.type,
                     chainTag: tx.chainTag,
                     blockRef: tx.blockRef,
                     expiration: tx.expiration,
                     gasPriceCoef: tx.gasPriceCoef,
+                    maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
+                    maxFeePerGas: tx.maxFeePerGas,
                     gas: tx.gas,
                     nonce: tx.nonce,
                     dependsOn: tx.dependsOn,

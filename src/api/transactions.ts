@@ -50,10 +50,13 @@ router.get('/:txid', try$(async (req, res) => {
         res.json({
             tx: {
                 txID: tx.txID,
+                type: tx.transaction.type,
                 chainTag: tx.transaction.chainTag,
                 blockRef: tx.transaction.blockRef,
                 expiration: tx.transaction.expiration,
                 gasPriceCoef: tx.transaction.gasPriceCoef,
+                maxPriorityFeePerGas: tx.transaction.maxPriorityFeePerGas,
+                maxFeePerGas: tx.transaction.maxFeePerGas,
                 gas: tx.transaction.gas,
                 nonce: tx.transaction.nonce,
                 dependsOn: tx.transaction.dependsOn,
@@ -64,6 +67,7 @@ router.get('/:txid', try$(async (req, res) => {
             },
             receipt: {
                 txID: tx.txID,
+                type: tx.transaction.type,
                 gasUsed: tx.transaction.gasUsed,
                 gasPayer: tx.transaction.gasPayer,
                 paid: tx.transaction.paid,
