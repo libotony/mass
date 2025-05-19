@@ -81,7 +81,8 @@ router.get('/:txid', try$(async (req, res) => {
             meta: {
                 blockID: tx.blockID,
                 blockNumber: tx.block.number,
-                blockTimestamp: tx.block.timestamp
+                blockTimestamp: tx.block.timestamp,
+                blockBaseFeePerGas: tx.block.baseFeePerGas
             },
         })
         return
@@ -106,5 +107,4 @@ router.get('/:txid', try$(async (req, res) => {
         })
         return
     }
-
 }))

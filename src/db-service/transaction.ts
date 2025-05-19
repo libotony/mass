@@ -57,6 +57,7 @@ export const getRecentTransactions = async (limit: number) => {
     return txs.map(x => {
         return {
             txID: x.txID,
+            type: x.transaction.type,
             origin: x.transaction.origin,
             totalValue: x.transaction.clauses.reduce((prev, current) => { return prev + BigInt(current.value) }, BigInt(0)),
             reverted: x.transaction.reverted,
