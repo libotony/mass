@@ -23,7 +23,7 @@ export const keys = {
 }
 
 export const isNonReversible = (blockNum: number) => {
-    const best = cache.get(keys.LATEST) as number
+    const best = cache.get(keys.LATEST) as number|undefined
 
     if (best) {
         if (best - blockNum >= REVERSIBLE_WINDOW) {

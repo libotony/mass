@@ -6,7 +6,7 @@ import { TransactionMeta } from '../explorer-db/entity/tx-meta'
 import { BranchTransaction } from '../explorer-db/entity/branch-transaction'
 
 const now = () => {
-    return Math.floor(new Date().getTime() / 1000)
+    return new Date().getTime()
 }
 
 export interface Neighbour {
@@ -14,10 +14,47 @@ export interface Neighbour {
     next: string | null
 }
 
+type BestBlock = {
+    block: Block
+    time: number // milliseconds
+}
+
+const cacheBest = (b: Block) => {
+    const nowTs = Math.floor(now() / 1000)
+    if (nowTs - b.timestamp > 6 * BLOCK_INTERVAL) {
+        // falling behind, do not cache
+        return
+    }
+
+    // [current, current + 10s] are considered right on time block
+    const current = nowTs - nowTs % BLOCK_INTERVAL
+    if (b.timestamp >= current && b.timestamp <= current + BLOCK_INTERVAL) { 
+        cache.set(keys.BEST, {
+            block: b,
+            time: b.timestamp * 1000
+        })
+    } else {
+        // otherwise, slightly falling behind, consider someone might be missing slot
+        // give the block 5s to be cached. eg. now = 13s valid until 15s then time=5s
+        // now = 17s valid until 20s then time=10s
+        cache.set(keys.BEST, {
+            block: b,
+            time: (nowTs - nowTs % (BLOCK_INTERVAL/2) - BLOCK_INTERVAL/2) * 1000
+        })
+    }
+    
+    cache.set(keys.LATEST, b.number)
+}
+
 export const getBest = async () => {
     if (cache.has(keys.BEST)) {
-        return cache.get(keys.BEST) as Block
+        const best = cache.get(keys.BEST) as BestBlock
+
+        if (now() - best.time < BLOCK_INTERVAL * 1000) {
+            return best.block
+        }
     }
+
     const b = (await getConnection()
         .getRepository(Block)
         .findOne({
@@ -25,18 +62,13 @@ export const getBest = async () => {
             order: { id: 'DESC' }
         }))!
 
-    const gap = now() - b.timestamp
-    if (gap >= 0 && gap < BLOCK_INTERVAL - 1) {
-        cache.set(keys.BEST, b, (BLOCK_INTERVAL - gap - 1) * 1000)
-    }
-    cache.set(keys.LATEST, b.number)
-
+    cacheBest(b)    
     return b
 }
 
 // limited the properties selected, only for /chain/summary
-export const getRecentBlocks = (limit: number) => {
-    return getConnection()
+export const getRecentBlocks = async (limit: number) => {
+    const recent = await getConnection()
         .getRepository(Block)
         .find({
             where: { isTrunk: true },
@@ -44,6 +76,9 @@ export const getRecentBlocks = (limit: number) => {
             select: ['number', 'id', 'signer', 'gasUsed', 'gasLimit', 'txCount', 'timestamp'],
             take: limit
         })
+    
+    cacheBest(recent[0])
+    return recent
 }
 
 export const getBlockByID = async (blockID: string) => {
